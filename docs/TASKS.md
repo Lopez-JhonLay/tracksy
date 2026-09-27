@@ -55,7 +55,7 @@ docs: add MVP implementation tracker
   - Verification: Run configuration and locale unit tests, lint, and type-check.
   - Commit: `feat: add runtime configuration`
 
-- [ ] 9. Configure Android 10 minimum support and EAS development and preview APK profiles without generating native directories.
+- [x] 9. Configure Android 10 minimum support and EAS development and preview APK profiles without generating native directories.
   - Verification: Inspect the resolved Expo configuration and run Expo Doctor.
   - Commit: `build: configure Android and EAS profiles`
 
