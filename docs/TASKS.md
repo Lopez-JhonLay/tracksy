@@ -51,7 +51,7 @@ docs: add MVP implementation tracker
   - Verification: Validate the lockfile, then run Expo Doctor, lint, and type-check.
   - Commit: `chore: install Tracksy runtime dependencies`
 
-- [ ] 8. Add public environment configuration, startup validation, locale fallback, and a placeholder-only `.env.example`.
+- [x] 8. Add public environment configuration, startup validation, locale fallback, and a placeholder-only `.env.example`.
   - Verification: Run configuration and locale unit tests, lint, and type-check.
   - Commit: `feat: add runtime configuration`
 

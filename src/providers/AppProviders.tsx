@@ -5,6 +5,7 @@ import {
   SafeAreaProvider,
 } from "react-native-safe-area-context";
 
+import { RuntimeConfigProvider } from "@/config";
 import { ThemeProvider } from "@/theme";
 
 import { createAppQueryClient } from "./query-client";
@@ -16,11 +17,13 @@ export function AppProviders({ children }: AppProvidersProps) {
 
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <ThemeProvider>
-        <QueryClientProvider client={queryClient}>
-          {children}
-        </QueryClientProvider>
-      </ThemeProvider>
+      <RuntimeConfigProvider>
+        <ThemeProvider>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </ThemeProvider>
+      </RuntimeConfigProvider>
     </SafeAreaProvider>
   );
 }

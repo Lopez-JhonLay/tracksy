@@ -36,7 +36,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test:theme": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-theme.mjs",
-    "test:foundations": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-foundations.mjs"
+    "test:foundations": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-foundations.mjs",
+    "test:config": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-runtime-config.mjs"
   },
   "private": true
 }
