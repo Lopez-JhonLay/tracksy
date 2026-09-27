@@ -65,7 +65,7 @@ docs: add MVP implementation tracker
 
 ## Discovery
 
-- [ ] 11. Add discovery contracts and utilities for query validation, canonical URLs, locale resolution, HTML entity decoding, and ISO-8601 durations.
+- [x] 11. Add discovery contracts and utilities for query validation, canonical URLs, locale resolution, HTML entity decoding, and ISO-8601 durations.
   - Verification: Run focused unit tests for valid, invalid, missing, and fallback inputs, then lint and type-check.
   - Commit: `feat: add discovery domain utilities`
 
