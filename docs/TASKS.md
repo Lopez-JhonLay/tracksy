@@ -39,7 +39,7 @@ docs: add MVP implementation tracker
   - Verification: Test token contracts and theme selection, render representative primitives in both themes, then run lint and type-check.
   - Commit: `feat: add Tracksy design system`
 
-- [ ] 5. Convert the blank entrypoint to Expo Router with persistent Discover and Download tabs.
+- [x] 5. Convert the blank entrypoint to Expo Router with persistent Discover and Download tabs.
   - Verification: Run lint and type-check, then smoke-test both routes and tab switching on Android.
   - Commit: `feat: add Tracksy tab navigation`
 
