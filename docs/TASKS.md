@@ -91,7 +91,7 @@ docs: add MVP implementation tracker
 
 ## Converter handoff
 
-- [ ] 17. Implement the session-only Zustand handoff store with unique request IDs and guarded clearing.
+- [x] 17. Implement the session-only Zustand handoff store with unique request IDs and guarded clearing.
   - Verification: Run unit tests for repeated selections, request-ID uniqueness, matching clears, and stale clears.
   - Commit: `feat: add converter handoff state`
 
