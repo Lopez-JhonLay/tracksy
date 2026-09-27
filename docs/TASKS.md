@@ -77,7 +77,7 @@ docs: add MVP implementation tracker
   - Verification: Run pagination, cancellation, retry, caching, and deduplication tests.
   - Commit: `feat: add discovery query state`
 
-- [ ] 14. Build the Discover search form and result list with loading, empty, offline, quota, configuration, and retry states.
+- [x] 14. Build the Discover search form and result list with loading, empty, offline, quota, configuration, and retry states.
   - Verification: Run component tests for every state, lint, and type-check.
   - Commit: `feat: build Discover search screen`
 

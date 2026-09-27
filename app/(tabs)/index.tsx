@@ -1,57 +1,39 @@
-import { StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useMemo } from "react";
 
 import {
-  Surface,
-  ThemedScreen,
-  ThemedText,
-  useTheme,
-} from "@/theme";
+  getSearchLocale,
+  useRuntimeConfig,
+  type RuntimeConfig,
+} from "@/config";
+import {
+  createYouTubeApiAdapter,
+  DiscoverSearchScreen,
+} from "@/features/discovery";
 
-export default function DiscoverScreen() {
-  const theme = useTheme();
-
-  return (
-    <ThemedScreen>
-      <SafeAreaView edges={["top"]} style={styles.safeArea}>
-        <View
-          style={[
-            styles.content,
-            {
-              gap: theme.layout.sectionGap,
-              maxWidth: theme.layout.maxContentWidth,
-              padding: theme.layout.screenPadding,
-            },
-          ]}
-        >
-          <View style={{ gap: theme.spacing.xs }}>
-            <ThemedText variant="title">Discover</ThemedText>
-            <ThemedText tone="muted">
-              Find a YouTube video and send its link to the converter.
-            </ThemedText>
-          </View>
-
-          <Surface style={{ gap: theme.spacing.xs }}>
-            <ThemedText variant="heading">
-              Search is coming next
-            </ThemedText>
-            <ThemedText tone="muted" variant="bodySmall">
-              This tab is ready for the YouTube discovery flow.
-            </ThemedText>
-          </Surface>
-        </View>
-      </SafeAreaView>
-    </ThemedScreen>
+function ConfiguredDiscoverRoute({ config }: { config: RuntimeConfig }) {
+  const adapter = useMemo(
+    () => createYouTubeApiAdapter(config),
+    [config],
   );
+  const locale = useMemo(
+    () => getSearchLocale(config.searchFallback),
+    [config.searchFallback],
+  );
+
+  return <DiscoverSearchScreen adapter={adapter} locale={locale} />;
 }
 
-const styles = StyleSheet.create({
-  content: {
-    alignSelf: "center",
-    flex: 1,
-    width: "100%",
-  },
-  safeArea: {
-    flex: 1,
-  },
-});
+export default function DiscoverRoute() {
+  const runtimeConfig = useRuntimeConfig();
+
+  if (runtimeConfig.status === "invalid") {
+    return (
+      <DiscoverSearchScreen
+        adapter={null}
+        locale={getSearchLocale()}
+      />
+    );
+  }
+
+  return <ConfiguredDiscoverRoute config={runtimeConfig.config} />;
+}

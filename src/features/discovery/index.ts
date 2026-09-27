@@ -10,6 +10,10 @@ export {
   type YouTubeFetch,
   type YouTubeSearchInput,
 } from "./api";
+export {
+  DiscoverSearchScreen,
+  type DiscoverSearchScreenProps,
+} from "./components";
 export type { SearchPage, SearchResult } from "./contracts";
 export { parseIso8601Duration } from "./duration";
 export { decodeHtmlEntities } from "./html-entities";
