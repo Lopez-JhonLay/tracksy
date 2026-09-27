@@ -59,7 +59,7 @@ docs: add MVP implementation tracker
   - Verification: Inspect the resolved Expo configuration and run Expo Doctor.
   - Commit: `build: configure Android and EAS profiles`
 
-- [ ] 10. Add Jest and React Native Testing Library with pnpm test scripts and shared mocks.
+- [x] 10. Add Jest and React Native Testing Library with pnpm test scripts and shared mocks.
   - Verification: Run the sample test, complete test command, lint, and type-check.
   - Commit: `test: add unit and component test setup`
 
