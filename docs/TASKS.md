@@ -47,7 +47,7 @@ docs: add MVP implementation tracker
   - Verification: Run lint, type-check, and a provider render test.
   - Commit: `chore: add application foundations`
 
-- [ ] 7. Add the required Expo-compatible dependencies for querying, state, WebView, clipboard, linking, localization, network state, and runtime schemas.
+- [x] 7. Add the required Expo-compatible dependencies for querying, state, WebView, clipboard, linking, localization, network state, and runtime schemas.
   - Verification: Validate the lockfile, then run Expo Doctor, lint, and type-check.
   - Commit: `chore: install Tracksy runtime dependencies`
 
