@@ -69,7 +69,7 @@ docs: add MVP implementation tracker
   - Verification: Run focused unit tests for valid, invalid, missing, and fallback inputs, then lint and type-check.
   - Commit: `feat: add discovery domain utilities`
 
-- [ ] 12. Implement the YouTube API adapter with restricted headers, explicit search parameters, duration enrichment, cancellation, response normalization, and typed errors.
+- [x] 12. Implement the YouTube API adapter with restricted headers, explicit search parameters, duration enrichment, cancellation, response normalization, and typed errors.
   - Verification: Run mocked adapter tests only; automated tests must not call YouTube.
   - Commit: `feat: add YouTube search adapter`
 
