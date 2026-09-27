@@ -22,6 +22,7 @@ import {
 
 import type { YouTubeApiAdapter, YouTubeApiError } from "../api";
 import type { SearchResult } from "../contracts";
+import { formatDuration } from "../duration";
 import { useDiscoverySearch } from "../query-state";
 import { validateSearchQuery } from "../query";
 
@@ -234,6 +235,7 @@ function StatusCard({
 
 function ResultRow({ item }: { item: SearchResult }) {
   const theme = useTheme();
+  const duration = formatDuration(item.durationSeconds);
 
   return (
     <Surface
@@ -257,9 +259,19 @@ function ResultRow({ item }: { item: SearchResult }) {
           },
         ]}
       />
-      <View style={[styles.resultText, { padding: theme.spacing.sm }]}>
+      <View
+        style={[
+          styles.resultText,
+          { gap: theme.spacing.xxs, padding: theme.spacing.sm },
+        ]}
+      >
         <ThemedText numberOfLines={2} variant="label">
           {item.title}
+        </ThemedText>
+        <ThemedText numberOfLines={1} tone="muted" variant="caption">
+          {duration
+            ? `${item.channelTitle} • ${duration}`
+            : item.channelTitle}
         </ThemedText>
       </View>
     </Surface>
@@ -268,6 +280,36 @@ function ResultRow({ item }: { item: SearchResult }) {
 
 function renderResultRow({ item }: ListRenderItemInfo<SearchResult>) {
   return <ResultRow item={item} />;
+}
+
+type LoadMoreFooterProps = {
+  hasNextPage: boolean;
+  loading: boolean;
+  onPress(): void;
+};
+
+function LoadMoreFooter({
+  hasNextPage,
+  loading,
+  onPress,
+}: LoadMoreFooterProps) {
+  const theme = useTheme();
+
+  if (!hasNextPage) {
+    return null;
+  }
+
+  return (
+    <View style={{ paddingTop: theme.spacing.sm }}>
+      <ThemedButton
+        accessibilityLabel={loading ? "Loading more results" : "Load More"}
+        label={loading ? "Loading more" : "Load More"}
+        loading={loading}
+        onPress={onPress}
+        variant="secondary"
+      />
+    </View>
+  );
 }
 
 function getErrorStatus(error: YouTubeApiError): StatusCardProps | null {
@@ -388,6 +430,9 @@ function ConfiguredDiscoverScreen({
     search.error?.code === "offline" ||
     search.error?.code === "service_unavailable" ||
     search.error?.code === "unknown";
+  const retrySearch = search.isFetchNextPageError
+    ? search.fetchNextPage
+    : search.refetch;
   const isInitialLoading =
     submittedQuery.length > 0 && search.isPending && !search.error;
   const isEmpty =
@@ -420,6 +465,13 @@ function ConfiguredDiscoverScreen({
               />
             ) : null
           }
+          ListFooterComponent={
+            <LoadMoreFooter
+              hasNextPage={search.hasNextPage}
+              loading={search.isFetchingNextPage}
+              onPress={() => void search.fetchNextPage()}
+            />
+          }
           ListHeaderComponent={
             <View style={{ gap: theme.layout.sectionGap }}>
               <ScreenHeader />
@@ -433,10 +485,12 @@ function ConfiguredDiscoverScreen({
                 <StatusCard
                   {...errorStatus}
                   onRetry={
-                    retryableError ? () => void search.refetch() : undefined
+                    retryableError ? () => void retrySearch() : undefined
                   }
                 />
-              ) : search.isFetching && items.length > 0 ? (
+              ) : search.isFetching &&
+                !search.isFetchingNextPage &&
+                items.length > 0 ? (
                 <View
                   accessibilityLabel="Refreshing search results"
                   accessibilityLiveRegion="polite"

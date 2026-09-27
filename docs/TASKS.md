@@ -81,7 +81,7 @@ docs: add MVP implementation tracker
   - Verification: Run component tests for every state, lint, and type-check.
   - Commit: `feat: build Discover search screen`
 
-- [ ] 15. Add explicit Load More behavior and result metadata presentation, including optional durations.
+- [x] 15. Add explicit Load More behavior and result metadata presentation, including optional durations.
   - Verification: Run tests for disabled and loading behavior, page appending, duplicate results, and missing durations.
   - Commit: `feat: add discovery pagination`
 

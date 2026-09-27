@@ -15,7 +15,7 @@ export {
   type DiscoverSearchScreenProps,
 } from "./components";
 export type { SearchPage, SearchResult } from "./contracts";
-export { parseIso8601Duration } from "./duration";
+export { formatDuration, parseIso8601Duration } from "./duration";
 export { decodeHtmlEntities } from "./html-entities";
 export {
   createDiscoverySearchQueryKey,

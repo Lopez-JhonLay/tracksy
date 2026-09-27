@@ -1,5 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+} from "@testing-library/react-native";
 import type { PropsWithChildren } from "react";
 
 import { ThemeProvider } from "@/theme";
@@ -10,13 +15,23 @@ import { DiscoverSearchScreen } from "./DiscoverSearchScreen";
 
 const LOCALE = { regionCode: "PH", relevanceLanguage: "en" };
 
-function result(videoId: string, title: string): SearchResult {
+function result(
+  videoId: string,
+  title: string,
+  options: {
+    channelTitle?: string;
+    durationSeconds?: number;
+  } = {},
+): SearchResult {
   return {
     videoId,
     title,
-    channelTitle: "Channel",
+    channelTitle: options.channelTitle ?? "Channel",
     thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
     canonicalUrl: `https://www.youtube.com/watch?v=${videoId}`,
+    ...(options.durationSeconds === undefined
+      ? {}
+      : { durationSeconds: options.durationSeconds }),
   };
 }
 
@@ -118,6 +133,103 @@ describe("DiscoverSearchScreen", () => {
     await submit(screen);
 
     await waitFor(() => expect(screen.getByText("No videos found")).toBeTruthy());
+    await cleanupScreen(screen);
+  });
+
+  it("shows channel metadata and formats optional durations", async () => {
+    const screen = await renderScreen(
+      createAdapter(
+        jest.fn(async () => ({
+          items: [
+            result("abcdefghijk", "With duration", {
+              channelTitle: "First channel",
+              durationSeconds: 65,
+            }),
+            result("lmnopqrstuv", "Without duration", {
+              channelTitle: "Second channel",
+            }),
+          ],
+        })),
+      ),
+    );
+
+    await submit(screen);
+
+    await waitFor(() =>
+      expect(screen.getByText("First channel • 1:05")).toBeTruthy(),
+    );
+    expect(screen.getByText("Second channel")).toBeTruthy();
+    expect(screen.queryByText("Second channel •")).toBeNull();
+    await cleanupScreen(screen);
+  });
+
+  it("loads pages only from Load More and appends unique results", async () => {
+    const search = jest
+      .fn<ReturnType<YouTubeApiAdapter["search"]>, Parameters<YouTubeApiAdapter["search"]>>()
+      .mockResolvedValueOnce({
+        items: [result("abcdefghijk", "First result")],
+        nextPageToken: "NEXT",
+      })
+      .mockResolvedValueOnce({
+        items: [
+          result("abcdefghijk", "Duplicate replacement"),
+          result("lmnopqrstuv", "Second result"),
+        ],
+      });
+    const screen = await renderScreen(createAdapter(search));
+
+    await submit(screen);
+    await waitFor(() => expect(screen.getByText("First result")).toBeTruthy());
+    expect(search).toHaveBeenCalledTimes(1);
+
+    await fireEvent.press(screen.getByRole("button", { name: "Load More" }));
+
+    await waitFor(() => expect(screen.getByText("Second result")).toBeTruthy());
+    expect(search).toHaveBeenCalledTimes(2);
+    expect(search).toHaveBeenLastCalledWith(
+      expect.objectContaining({ pageToken: "NEXT" }),
+    );
+    expect(screen.queryByText("Duplicate replacement")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Load More" })).toBeNull();
+    await cleanupScreen(screen);
+  });
+
+  it("keeps results visible and disables Load More while paging", async () => {
+    let resolveNextPage: (page: SearchPage) => void = () => undefined;
+    const nextPage = new Promise<SearchPage>((resolve) => {
+      resolveNextPage = resolve;
+    });
+    const search = jest
+      .fn<ReturnType<YouTubeApiAdapter["search"]>, Parameters<YouTubeApiAdapter["search"]>>()
+      .mockResolvedValueOnce({
+        items: [result("abcdefghijk", "Existing result")],
+        nextPageToken: "NEXT",
+      })
+      .mockReturnValueOnce(nextPage);
+    const screen = await renderScreen(createAdapter(search));
+
+    await submit(screen);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Load More" })).toBeTruthy(),
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "Load More" }));
+
+    const loadingButton = await waitFor(() =>
+      screen.getByRole("button", {
+        name: "Loading more results",
+      }),
+    );
+    expect(loadingButton).toBeDisabled();
+    expect(loadingButton.props.accessibilityState).toMatchObject({
+      busy: true,
+      disabled: true,
+    });
+    expect(screen.getByText("Existing result")).toBeTruthy();
+
+    await act(async () => {
+      resolveNextPage({ items: [result("lmnopqrstuv", "Loaded result")] });
+    });
+    await waitFor(() => expect(screen.getByText("Loaded result")).toBeTruthy());
     await cleanupScreen(screen);
   });
 

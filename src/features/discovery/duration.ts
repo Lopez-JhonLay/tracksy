@@ -47,3 +47,26 @@ export function parseIso8601Duration(
     Number(secondsValue ?? 0),
   ]);
 }
+
+export function formatDuration(
+  durationSeconds: number | undefined,
+): string | undefined {
+  if (
+    typeof durationSeconds !== "number" ||
+    !Number.isSafeInteger(durationSeconds) ||
+    durationSeconds < 0
+  ) {
+    return undefined;
+  }
+
+  const hours = Math.floor(durationSeconds / 3600);
+  const minutes = Math.floor((durationSeconds % 3600) / 60);
+  const seconds = durationSeconds % 60;
+  const paddedSeconds = String(seconds).padStart(2, "0");
+
+  if (hours === 0) {
+    return `${minutes}:${paddedSeconds}`;
+  }
+
+  return `${hours}:${String(minutes).padStart(2, "0")}:${paddedSeconds}`;
+}
