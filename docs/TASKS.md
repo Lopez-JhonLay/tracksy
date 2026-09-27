@@ -35,7 +35,7 @@ docs: add MVP implementation tracker
 
 ## Foundation
 
-- [ ] 4. Implement the documented light and dark theme tokens, theme provider, reusable primitives, and system-theme behavior.
+- [x] 4. Implement the documented light and dark theme tokens, theme provider, reusable primitives, and system-theme behavior.
   - Verification: Test token contracts and theme selection, render representative primitives in both themes, then run lint and type-check.
   - Commit: `feat: add Tracksy design system`
 
