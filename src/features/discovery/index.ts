@@ -14,6 +14,18 @@ export type { SearchPage, SearchResult } from "./contracts";
 export { parseIso8601Duration } from "./duration";
 export { decodeHtmlEntities } from "./html-entities";
 export {
+  createDiscoverySearchQueryKey,
+  createDiscoverySearchQueryOptions,
+  DISCOVERY_CACHE_TIME_MS,
+  selectDiscoverySearchData,
+  shouldRetryDiscoverySearch,
+  useDiscoverySearch,
+  type DiscoveryPageParam,
+  type DiscoverySearchData,
+  type DiscoverySearchOptions,
+  type DiscoverySearchQueryKey,
+} from "./query-state";
+export {
   resolveSearchLocale,
   type DeviceLocale,
   type SearchLocale,

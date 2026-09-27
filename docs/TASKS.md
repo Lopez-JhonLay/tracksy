@@ -73,7 +73,7 @@ docs: add MVP implementation tracker
   - Verification: Run mocked adapter tests only; automated tests must not call YouTube.
   - Commit: `feat: add YouTube search adapter`
 
-- [ ] 13. Implement the TanStack infinite-query layer with session caching, explicit pagination, deduplication, and retry rules.
+- [x] 13. Implement the TanStack infinite-query layer with session caching, explicit pagination, deduplication, and retry rules.
   - Verification: Run pagination, cancellation, retry, caching, and deduplication tests.
   - Commit: `feat: add discovery query state`
 
