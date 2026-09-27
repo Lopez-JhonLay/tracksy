@@ -6,7 +6,7 @@ import {
   type ColorValue,
 } from "react-native";
 
-import { useTheme } from "../../src/theme";
+import { useTheme } from "@/theme";
 
 type TabBarIconProps = {
   color: ColorValue;

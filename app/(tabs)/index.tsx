@@ -6,7 +6,7 @@ import {
   ThemedScreen,
   ThemedText,
   useTheme,
-} from "../../src/theme";
+} from "@/theme";
 
 export default function DiscoverScreen() {
   const theme = useTheme();

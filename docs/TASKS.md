@@ -43,7 +43,7 @@ docs: add MVP implementation tracker
   - Verification: Run lint and type-check, then smoke-test both routes and tab switching on Android.
   - Commit: `feat: add Tracksy tab navigation`
 
-- [ ] 6. Add the shared application structure, `@/` alias, Query client, safe-area provider, and session-store foundation.
+- [x] 6. Add the shared application structure, `@/` alias, Query client, safe-area provider, and session-store foundation.
   - Verification: Run lint, type-check, and a provider render test.
   - Commit: `chore: add application foundations`
 

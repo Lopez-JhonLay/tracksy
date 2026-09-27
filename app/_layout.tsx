@@ -1,7 +1,8 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
-import { ThemeProvider, useTheme } from "../src/theme";
+import { AppProviders } from "@/providers";
+import { useTheme } from "@/theme";
 
 function RootNavigator() {
   const theme = useTheme();
@@ -25,8 +26,8 @@ function RootNavigator() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
+    <AppProviders>
       <RootNavigator />
-    </ThemeProvider>
+    </AppProviders>
   );
 }
