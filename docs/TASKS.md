@@ -105,7 +105,7 @@ docs: add MVP implementation tracker
   - Verification: Run unit tests for escaping, success, every failure status, invalid messages, and origin mismatch.
   - Commit: `feat: add converter URL injection`
 
-- [ ] 20. Implement the main-frame navigation policy for trusted, external, HTTP, unsafe-scheme, and popup requests.
+- [x] 20. Implement the main-frame navigation policy for trusted, external, HTTP, unsafe-scheme, and popup requests.
   - Verification: Run policy tests for every allowed, confirmed, and blocked destination class.
   - Commit: `feat: enforce converter navigation policy`
 
