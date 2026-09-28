@@ -6,11 +6,14 @@ import {
   waitFor,
 } from "@testing-library/react-native";
 import type { PropsWithChildren } from "react";
+import { Alert, ToastAndroid } from "react-native";
 
+import type { UseVideoLink } from "@/features/converter";
 import { ThemeProvider } from "@/theme";
 
 import { YouTubeApiError, type YouTubeApiAdapter } from "../api";
 import type { SearchPage, SearchResult } from "../contracts";
+import type { OpenYouTubeVideo } from "../external-linking";
 import { DiscoverSearchScreen } from "./DiscoverSearchScreen";
 
 const LOCALE = { regionCode: "PH", relevanceLanguage: "en" };
@@ -41,7 +44,11 @@ function createAdapter(
   return { search };
 }
 
-async function renderScreen(adapter: YouTubeApiAdapter | null) {
+async function renderScreen(
+  adapter: YouTubeApiAdapter | null,
+  openVideo?: OpenYouTubeVideo,
+  useLink?: UseVideoLink,
+) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { gcTime: Infinity } },
   });
@@ -55,7 +62,12 @@ async function renderScreen(adapter: YouTubeApiAdapter | null) {
   }
 
   const rendered = await render(
-    <DiscoverSearchScreen adapter={adapter} locale={LOCALE} />,
+    <DiscoverSearchScreen
+      adapter={adapter}
+      locale={LOCALE}
+      openVideo={openVideo}
+      useLink={useLink}
+    />,
     { wrapper: Wrapper },
   );
 
@@ -160,6 +172,134 @@ describe("DiscoverSearchScreen", () => {
     );
     expect(screen.getByText("Second channel")).toBeTruthy();
     expect(screen.queryByText("Second channel •")).toBeNull();
+    await cleanupScreen(screen);
+  });
+
+  it("opens a result externally through the injected YouTube action", async () => {
+    const openVideo = jest.fn(async (videoId: string) => ({
+      status: "opened" as const,
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+    }));
+    const screen = await renderScreen(
+      createAdapter(
+        jest.fn(async () => ({
+          items: [result("abcdefghijk", "Open me")],
+        })),
+      ),
+      openVideo,
+    );
+
+    await submit(screen);
+    const openButton = await waitFor(() =>
+      screen.getByRole("button", { name: "Open Open me in YouTube" }),
+    );
+    await fireEvent.press(openButton);
+
+    await waitFor(() =>
+      expect(openVideo).toHaveBeenCalledWith("abcdefghijk"),
+    );
+    await cleanupScreen(screen);
+  });
+
+  it("reports when no external handler can open a result", async () => {
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    const openVideo = jest.fn(async () => ({
+      status: "unavailable" as const,
+    }));
+    const screen = await renderScreen(
+      createAdapter(
+        jest.fn(async () => ({
+          items: [result("abcdefghijk", "Unavailable video")],
+        })),
+      ),
+      openVideo,
+    );
+
+    await submit(screen);
+    const openButton = await waitFor(() =>
+      screen.getByRole("button", {
+        name: "Open Unavailable video in YouTube",
+      }),
+    );
+    await fireEvent.press(openButton);
+
+    await waitFor(() =>
+      expect(alert).toHaveBeenCalledWith(
+        "Unable to open YouTube",
+        "No YouTube app or browser could open this video.",
+      ),
+    );
+    alert.mockRestore();
+    await cleanupScreen(screen);
+  });
+
+  it("sends a result to the converter from Use Link", async () => {
+    const selectedResult = result("abcdefghijk", "Use this link");
+    const useLink = jest.fn(async () => ({
+      handoff: {
+        requestId: "42-1",
+        youtubeUrl: selectedResult.canonicalUrl,
+        selectedAt: 42,
+      },
+      clipboardStatus: "copied" as const,
+    }));
+    const screen = await renderScreen(
+      createAdapter(
+        jest.fn(async () => ({
+          items: [selectedResult],
+        })),
+      ),
+      undefined,
+      useLink,
+    );
+
+    await submit(screen);
+    const useLinkButton = await waitFor(() =>
+      screen.getByRole("button", { name: "Use Use this link link" }),
+    );
+    await fireEvent.press(useLinkButton);
+
+    await waitFor(() => expect(useLink).toHaveBeenCalledWith(selectedResult));
+    await cleanupScreen(screen);
+  });
+
+  it("reports a clipboard failure without blocking the converter handoff", async () => {
+    const selectedResult = result("abcdefghijk", "Clipboard fallback");
+    const toast = jest
+      .spyOn(ToastAndroid, "show")
+      .mockImplementation(() => undefined);
+    const useLink = jest.fn(async () => ({
+      handoff: {
+        requestId: "42-1",
+        youtubeUrl: selectedResult.canonicalUrl,
+        selectedAt: 42,
+      },
+      clipboardStatus: "unavailable" as const,
+    }));
+    const screen = await renderScreen(
+      createAdapter(
+        jest.fn(async () => ({
+          items: [selectedResult],
+        })),
+      ),
+      undefined,
+      useLink,
+    );
+
+    await submit(screen);
+    const useLinkButton = await waitFor(() =>
+      screen.getByRole("button", { name: "Use Clipboard fallback link" }),
+    );
+    await fireEvent.press(useLinkButton);
+
+    await waitFor(() =>
+      expect(toast).toHaveBeenCalledWith(
+        "Link sent, but it could not be copied to the clipboard.",
+        ToastAndroid.SHORT,
+      ),
+    );
+    expect(useLink).toHaveBeenCalledWith(selectedResult);
+    toast.mockRestore();
     await cleanupScreen(screen);
   });
 

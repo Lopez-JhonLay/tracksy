@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import type { WebViewProps } from "react-native-webview";
 
 import { useConverterHandoffStore } from "@/store";
 import {
@@ -26,10 +27,12 @@ type ExternalNavigationDecision = Extract<
 >;
 
 export type DownloadScreenProps = {
+  converterSource?: WebViewProps["source"];
   openBrowser?: OpenInSystemBrowser;
 };
 
 export function DownloadScreen({
+  converterSource,
   openBrowser = openInSystemBrowser,
 }: DownloadScreenProps) {
   const theme = useTheme();
@@ -113,6 +116,7 @@ export function DownloadScreen({
               handoff={handoff}
               onExternalNavigationRequest={handleExternalNavigation}
               onFilled={clearHandoff}
+              source={converterSource}
             />
           </View>
         </View>

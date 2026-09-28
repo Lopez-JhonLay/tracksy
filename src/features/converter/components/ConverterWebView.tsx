@@ -80,6 +80,7 @@ export type ConverterWebViewProps = {
   onFilled?: (requestId: string) => void;
   onInjectionResult?: (result: InjectionResult) => void;
   onPopupBlocked?: () => void;
+  source?: WebViewProps["source"];
 };
 
 type RecoveryOverlayProps = {
@@ -225,6 +226,7 @@ export function ConverterWebView({
   onFilled,
   onInjectionResult,
   onPopupBlocked,
+  source = CONVERTER_SOURCE,
 }: ConverterWebViewProps) {
   const network = useNetInfo();
   const requestId = handoff?.requestId;
@@ -405,7 +407,7 @@ export function ConverterWebView({
         onShouldStartLoadWithRequest={handleShouldStartLoad}
         originWhitelist={HTTPS_ORIGIN_WHITELIST}
         setSupportMultipleWindows={false}
-        source={CONVERTER_SOURCE}
+        source={source}
         style={styles.webView}
         thirdPartyCookiesEnabled={false}
         webviewDebuggingEnabled={__DEV__}

@@ -127,6 +127,7 @@ export type ThemedButtonProps = Omit<
   "children" | "style"
 > & {
   label: string;
+  leadingIcon?: ReactNode;
   variant?: ButtonVariant;
   loading?: boolean;
   style?: StyleProp<ViewStyle>;
@@ -195,6 +196,7 @@ function getButtonColors(
 
 export function ThemedButton({
   label,
+  leadingIcon,
   variant = "primary",
   loading = false,
   disabled = false,
@@ -256,7 +258,12 @@ export function ThemedButton({
         );
 
         return (
-          <View style={styles.buttonContent}>
+          <View
+            style={[
+              styles.buttonContent,
+              { gap: leadingIcon ? theme.spacing.xs : theme.spacing.none },
+            ]}
+          >
             {loading ? (
               <ActivityIndicator
                 accessibilityElementsHidden
@@ -264,6 +271,11 @@ export function ThemedButton({
                 size="small"
                 style={styles.loadingIndicator}
               />
+            ) : null}
+            {leadingIcon ? (
+              <View style={{ opacity: loading ? 0 : 1 }}>
+                {leadingIcon}
+              </View>
             ) : null}
             <Text
               style={[
@@ -294,6 +306,7 @@ const styles = StyleSheet.create({
   },
   buttonContent: {
     alignItems: "center",
+    flexDirection: "row",
     justifyContent: "center",
   },
   focusedButton: {

@@ -20,6 +20,18 @@
         "buildType": "apk",
         "credentialsSource": "remote"
       }
+    },
+    "e2e": {
+      "developmentClient": false,
+      "distribution": "internal",
+      "environment": "development",
+      "env": {
+        "TRACKSY_ENABLE_TEST_ADAPTERS": "1"
+      },
+      "android": {
+        "buildType": "apk",
+        "credentialsSource": "remote"
+      }
     }
   }
 }

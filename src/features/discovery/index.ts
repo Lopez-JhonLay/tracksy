@@ -16,6 +16,12 @@ export {
 } from "./components";
 export type { SearchPage, SearchResult } from "./contracts";
 export { formatDuration, parseIso8601Duration } from "./duration";
+export {
+  openYouTubeVideo,
+  type ExternalUrlOpener,
+  type OpenYouTubeResult,
+  type OpenYouTubeVideo,
+} from "./external-linking";
 export { decodeHtmlEntities } from "./html-entities";
 export {
   createDiscoverySearchQueryKey,

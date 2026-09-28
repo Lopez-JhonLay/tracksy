@@ -127,7 +127,7 @@ docs: add MVP implementation tracker
 
 ## End-to-end and release
 
-- [ ] 25. Add build-time fake search and converter adapters that cannot be enabled in preview builds.
+- [x] 25. Add build-time fake search and converter adapters that cannot be enabled in preview builds.
   - Verification: Confirm deterministic fixtures work in tests and the resolved preview configuration excludes the fake adapters.
   - Commit: `test: add deterministic test adapters`
 

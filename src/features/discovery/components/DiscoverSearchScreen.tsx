@@ -1,17 +1,20 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { useState, type ComponentProps } from "react";
+import { useCallback, useState, type ComponentProps } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   StyleSheet,
   TextInput,
+  ToastAndroid,
   View,
   type ListRenderItemInfo,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import type { SearchLocale } from "@/config";
+import type { UseVideoLink } from "@/features/converter";
 import {
   Surface,
   ThemedButton,
@@ -23,6 +26,10 @@ import {
 import type { YouTubeApiAdapter, YouTubeApiError } from "../api";
 import type { SearchResult } from "../contracts";
 import { formatDuration } from "../duration";
+import {
+  openYouTubeVideo,
+  type OpenYouTubeVideo,
+} from "../external-linking";
 import { useDiscoverySearch } from "../query-state";
 import { validateSearchQuery } from "../query";
 
@@ -33,6 +40,8 @@ type MaterialIconName = ComponentProps<
 export type DiscoverSearchScreenProps = {
   adapter: YouTubeApiAdapter | null;
   locale: SearchLocale;
+  openVideo?: OpenYouTubeVideo;
+  useLink?: UseVideoLink;
 };
 
 type SearchFormProps = {
@@ -233,9 +242,61 @@ function StatusCard({
   );
 }
 
-function ResultRow({ item }: { item: SearchResult }) {
+function ResultRow({
+  item,
+  onOpen,
+  onUseLink,
+}: {
+  item: SearchResult;
+  onOpen: OpenYouTubeVideo;
+  onUseLink?: UseVideoLink;
+}) {
   const theme = useTheme();
   const duration = formatDuration(item.durationSeconds);
+  const [opening, setOpening] = useState(false);
+  const [sending, setSending] = useState(false);
+
+  async function handleOpen() {
+    if (opening) {
+      return;
+    }
+
+    setOpening(true);
+    const result = await onOpen(item.videoId);
+    setOpening(false);
+
+    if (result.status !== "opened") {
+      Alert.alert(
+        "Unable to open YouTube",
+        "No YouTube app or browser could open this video.",
+      );
+    }
+  }
+
+  async function handleUseLink() {
+    if (!onUseLink || sending) {
+      return;
+    }
+
+    setSending(true);
+
+    try {
+      const result = await onUseLink(item);
+      if (result.clipboardStatus === "unavailable") {
+        ToastAndroid.show(
+          "Link sent, but it could not be copied to the clipboard.",
+          ToastAndroid.SHORT,
+        );
+      }
+    } catch {
+      Alert.alert(
+        "Unable to send link",
+        "Tracksy could not open the Download tab.",
+      );
+    } finally {
+      setSending(false);
+    }
+  }
 
   return (
     <Surface
@@ -273,13 +334,52 @@ function ResultRow({ item }: { item: SearchResult }) {
             ? `${item.channelTitle} • ${duration}`
             : item.channelTitle}
         </ThemedText>
+        <View style={[styles.resultActions, { gap: theme.spacing.xs }]}>
+          {onUseLink ? (
+            <ThemedButton
+              accessibilityLabel={
+                sending
+                  ? `Sending ${item.title} to Download`
+                  : `Use ${item.title} link`
+              }
+              label={sending ? "Sending" : "Use Link"}
+              leadingIcon={
+                <MaterialCommunityIcons
+                  accessibilityElementsHidden
+                  color={theme.colors.onPrimary}
+                  name="link-variant"
+                  size={theme.iconSize.sm}
+                />
+              }
+              loading={sending}
+              onPress={() => void handleUseLink()}
+              style={styles.resultAction}
+            />
+          ) : null}
+          <ThemedButton
+            accessibilityLabel={
+              opening
+                ? `Opening ${item.title} in YouTube`
+                : `Open ${item.title} in YouTube`
+            }
+            label={opening ? "Opening" : "Open in YouTube"}
+            leadingIcon={
+              <MaterialCommunityIcons
+                accessibilityElementsHidden
+                color={theme.colors.primary}
+                name="open-in-new"
+                size={theme.iconSize.sm}
+              />
+            }
+            loading={opening}
+            onPress={() => void handleOpen()}
+            style={styles.resultAction}
+            variant="tertiary"
+          />
+        </View>
       </View>
     </Surface>
   );
-}
-
-function renderResultRow({ item }: ListRenderItemInfo<SearchResult>) {
-  return <ResultRow item={item} />;
 }
 
 type LoadMoreFooterProps = {
@@ -392,9 +492,13 @@ function UnconfiguredDiscoverScreen() {
 function ConfiguredDiscoverScreen({
   adapter,
   locale,
+  openVideo,
+  useLink,
 }: {
   adapter: YouTubeApiAdapter;
   locale: SearchLocale;
+  openVideo: OpenYouTubeVideo;
+  useLink?: UseVideoLink;
 }) {
   const theme = useTheme();
   const [draftQuery, setDraftQuery] = useState("");
@@ -437,6 +541,12 @@ function ConfiguredDiscoverScreen({
     submittedQuery.length > 0 && search.isPending && !search.error;
   const isEmpty =
     search.isSuccess && submittedQuery.length > 0 && items.length === 0;
+  const renderResultRow = useCallback(
+    ({ item }: ListRenderItemInfo<SearchResult>) => (
+      <ResultRow item={item} onOpen={openVideo} onUseLink={useLink} />
+    ),
+    [openVideo, useLink],
+  );
 
   return (
     <ThemedScreen>
@@ -515,9 +625,16 @@ function ConfiguredDiscoverScreen({
 export function DiscoverSearchScreen({
   adapter,
   locale,
+  openVideo = openYouTubeVideo,
+  useLink,
 }: DiscoverSearchScreenProps) {
   return adapter ? (
-    <ConfiguredDiscoverScreen adapter={adapter} locale={locale} />
+    <ConfiguredDiscoverScreen
+      adapter={adapter}
+      locale={locale}
+      openVideo={openVideo}
+      useLink={useLink}
+    />
   ) : (
     <UnconfiguredDiscoverScreen />
   );
@@ -553,6 +670,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     overflow: "hidden",
+  },
+  resultAction: {
+    alignSelf: "flex-start",
+  },
+  resultActions: {
+    alignItems: "flex-start",
   },
   resultText: {
     flex: 1,
