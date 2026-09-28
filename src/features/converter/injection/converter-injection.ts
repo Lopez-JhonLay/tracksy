@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CONVERTER_ORIGIN = "https://junkyardpizzeria.ca";
+export const CONVERTER_ORIGIN = "https://www.willowindfarm.ca";
 
 const injectionResultSchema = z.discriminatedUnion("status", [
   z

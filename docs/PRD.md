@@ -21,7 +21,7 @@ Tracksy is a personal learning and portfolio project. It does not operate a conv
 Tracksy has two primary tabs:
 
 1. **Discover** searches YouTube using YouTube Data API v3 and displays video metadata.
-2. **Download** embeds `https://junkyardpizzeria.ca/` in a WebView and passes the selected YouTube URL into its converter form.
+2. **Download** embeds `https://www.willowindfarm.ca/` in a WebView and passes the selected YouTube URL into its converter form.
 
 The converter is a third-party website. Tracksy does not control its availability, conversion behavior, output quality, advertisements, redirects, or future interface changes.
 
@@ -60,7 +60,7 @@ If automatic filling fails, Tracksy must keep the URL in the clipboard and show 
 
 ### Embedded Converter
 
-- Load `https://junkyardpizzeria.ca/` through `react-native-webview`.
+- Load `https://www.willowindfarm.ca/` through `react-native-webview`.
 - Show loading, offline, and page-load failure states.
 - Provide reload and open-in-browser actions.
 - Preserve the selected URL when the WebView reloads.
@@ -96,6 +96,7 @@ The MVP is complete when the user can search YouTube, open a result externally, 
 - User accounts, cloud synchronization, analytics, advertising, or monetization.
 - Playlists, albums, or batch conversion.
 - A built-in music player, music library, recommendations, lyrics, or equalizer.
+- User-selectable converter websites or custom converter profiles; defer this to V2.
 
 ## Constraints
 

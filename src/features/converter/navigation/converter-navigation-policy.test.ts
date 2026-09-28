@@ -14,18 +14,18 @@ describe("converter navigation policy", () => {
   it.each([
     [
       "converter home",
-      "https://junkyardpizzeria.ca/",
-      "https://junkyardpizzeria.ca/",
+      "https://www.willowindfarm.ca/",
+      "https://www.willowindfarm.ca/",
     ],
     [
       "converter path",
-      "https://junkyardpizzeria.ca/convert?source=tracksy#url",
-      "https://junkyardpizzeria.ca/convert?source=tracksy#url",
+      "https://www.willowindfarm.ca/convert?source=tracksy#url",
+      "https://www.willowindfarm.ca/convert?source=tracksy#url",
     ],
     [
       "explicit default HTTPS port",
-      "https://junkyardpizzeria.ca:443/convert",
-      "https://junkyardpizzeria.ca/convert",
+      "https://www.willowindfarm.ca:443/convert",
+      "https://www.willowindfarm.ca/convert",
     ],
   ])("allows the trusted origin for %s", (_case, url, normalizedUrl) => {
     expect(decide(url)).toEqual({
@@ -43,21 +43,21 @@ describe("converter navigation policy", () => {
     ],
     [
       "lookalike hostname",
-      "https://junkyardpizzeria.ca.evil.example/",
-      "junkyardpizzeria.ca.evil.example",
-      "https://junkyardpizzeria.ca.evil.example/",
+      "https://www.willowindfarm.ca.evil.example/",
+      "www.willowindfarm.ca.evil.example",
+      "https://www.willowindfarm.ca.evil.example/",
     ],
     [
       "non-default port",
-      "https://junkyardpizzeria.ca:444/convert",
-      "junkyardpizzeria.ca",
-      "https://junkyardpizzeria.ca:444/convert",
+      "https://www.willowindfarm.ca:444/convert",
+      "www.willowindfarm.ca",
+      "https://www.willowindfarm.ca:444/convert",
     ],
     [
       "userinfo lookalike",
-      "https://junkyardpizzeria.ca@evil.example/",
+      "https://www.willowindfarm.ca@evil.example/",
       "evil.example",
-      "https://junkyardpizzeria.ca@evil.example/",
+      "https://www.willowindfarm.ca@evil.example/",
     ],
   ])(
     "requires confirmation for external HTTPS with a %s",
@@ -71,7 +71,7 @@ describe("converter navigation policy", () => {
   );
 
   it.each([
-    "http://junkyardpizzeria.ca/",
+    "http://www.willowindfarm.ca/",
     "http://example.com/",
   ])("blocks HTTP navigation to %s", (url) => {
     expect(decide(url)).toEqual({
@@ -107,7 +107,7 @@ describe("converter navigation policy", () => {
   );
 
   it.each([
-    "https://junkyardpizzeria.ca/",
+    "https://www.willowindfarm.ca/",
     "https://example.com/",
     "javascript:alert(1)",
   ])("blocks popup request %s without opening it", (url) => {

@@ -21,7 +21,7 @@ User
   -> Use Link
   -> Zustand handoff + Android clipboard
   -> Download tab WebView
-  -> Autofill junkyardpizzeria.ca
+  -> Autofill willowindfarm.ca
   -> User taps Convert
   -> Android system download or external-browser fallback
 ```
@@ -37,7 +37,7 @@ User
 | Cross-tab state | Zustand, in memory only |
 | Web content | `react-native-webview` |
 | YouTube access | Direct YouTube Data API v3 calls from the Android client |
-| Converter | `https://junkyardpizzeria.ca/` loaded as untrusted third-party content |
+| Converter | `https://www.willowindfarm.ca/` loaded as untrusted third-party content |
 | Persistence | None across process restarts |
 | Backend | None |
 | Distribution | Sideloaded APK from EAS internal builds |
@@ -70,7 +70,7 @@ User
              │ HTTPS                            │ HTTPS
              ▼                                  ▼
 ┌─────────────────────────┐       ┌─────────────────────────────┐
-│ YouTube Data API v3     │       │ junkyardpizzeria.ca        │
+│ YouTube Data API v3     │       │ willowindfarm.ca           │
 │ Search and metadata     │       │ Third-party converter      │
 └─────────────────────────┘       └──────────────┬──────────────┘
                                                 │
@@ -359,7 +359,7 @@ Clipboard failure does not block the handoff. It only removes the manual-paste f
 - Load the converter lazily on the first visit to Download or the first handoff.
 - Keep it mounted during ordinary tab switches.
 - A new `requestId` changes the WebView component key, discarding the previous converter page.
-- Every new handoff starts at `https://junkyardpizzeria.ca/`.
+- Every new handoff starts at `https://www.willowindfarm.ca/`.
 - Do not reuse a partially completed conversion for a different result.
 
 ### 8.2 Injection sequence
@@ -367,7 +367,7 @@ Clipboard failure does not block the handoff. It only removes the manual-paste f
 Injection occurs after `onLoadEnd` only when:
 
 - A handoff exists.
-- The main-frame URL has the exact origin `https://junkyardpizzeria.ca`.
+- The main-frame URL has the exact origin `https://www.willowindfarm.ca`.
 - The current request has not already reported success.
 
 The generated script must:
@@ -429,7 +429,7 @@ Use `originWhitelist={["https://*"]}` together with `onShouldStartLoadWithReques
 
 | Destination | Action |
 |---|---|
-| Exact `https://junkyardpizzeria.ca` origin | Allow inside WebView |
+| Exact `https://www.willowindfarm.ca` origin | Allow inside WebView |
 | Different HTTPS origin | Block, show hostname confirmation, then optionally open through `Linking` |
 | HTTP | Block |
 | `file:`, `content:`, `data:`, `javascript:` | Block |

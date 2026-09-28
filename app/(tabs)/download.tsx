@@ -1,8 +1,9 @@
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ConverterWebView } from "@/features/converter/components";
+import { useConverterHandoffStore } from "@/store";
 import {
-  Surface,
   ThemedScreen,
   ThemedText,
   useTheme,
@@ -10,6 +11,9 @@ import {
 
 export default function DownloadScreen() {
   const theme = useTheme();
+  const requestId = useConverterHandoffStore(
+    (state) => state.handoff?.requestId,
+  );
 
   return (
     <ThemedScreen>
@@ -18,27 +22,35 @@ export default function DownloadScreen() {
           style={[
             styles.content,
             {
-              gap: theme.layout.sectionGap,
               maxWidth: theme.layout.maxContentWidth,
-              padding: theme.layout.screenPadding,
             },
           ]}
         >
-          <View style={{ gap: theme.spacing.xs }}>
-            <ThemedText variant="title">Download</ThemedText>
-            <ThemedText tone="muted">
-              The selected link will open here in the converter.
+          <View
+            style={[
+              styles.toolbar,
+              {
+                backgroundColor: theme.colors.surface,
+                borderBottomColor: theme.colors.border,
+                paddingHorizontal: theme.layout.screenPadding,
+              },
+            ]}
+          >
+            <ThemedText accessibilityRole="header" variant="heading">
+              Download
             </ThemedText>
           </View>
-
-          <Surface style={{ gap: theme.spacing.xs }}>
-            <ThemedText variant="heading">
-              No link selected
-            </ThemedText>
-            <ThemedText tone="muted" variant="bodySmall">
-              Choose Use Link from Discover to begin.
-            </ThemedText>
-          </Surface>
+          <View
+            accessibilityLabel="Converter content"
+            style={[
+              styles.converter,
+              {
+                borderColor: theme.colors.border,
+              },
+            ]}
+          >
+            <ConverterWebView requestId={requestId} />
+          </View>
         </View>
       </SafeAreaView>
     </ThemedScreen>
@@ -51,7 +63,18 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
   },
+  converter: {
+    borderWidth: StyleSheet.hairlineWidth,
+    flex: 1,
+    overflow: "hidden",
+  },
   safeArea: {
     flex: 1,
+  },
+  toolbar: {
+    alignItems: "center",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    flexDirection: "row",
+    height: 56,
   },
 });

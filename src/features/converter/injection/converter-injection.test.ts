@@ -165,17 +165,17 @@ describe("converter injection", () => {
 
 describe("converter injection validation", () => {
   it.each([
-    "https://junkyardpizzeria.ca",
-    "https://junkyardpizzeria.ca/",
-    "https://junkyardpizzeria.ca/converter?source=tracksy",
+    "https://www.willowindfarm.ca",
+    "https://www.willowindfarm.ca/",
+    "https://www.willowindfarm.ca/converter?source=tracksy",
   ])("accepts the exact trusted origin for %s", (url) => {
     expect(isTrustedConverterOrigin(url)).toBe(true);
   });
 
   it.each([
-    "http://junkyardpizzeria.ca",
-    "https://junkyardpizzeria.ca.evil.example",
-    "https://evil.example/junkyardpizzeria.ca",
+    "http://www.willowindfarm.ca",
+    "https://www.willowindfarm.ca.evil.example",
+    "https://evil.example/www.willowindfarm.ca",
     "javascript:alert(1)",
     "not a url",
   ])("rejects an origin mismatch for %s", (url) => {
@@ -214,7 +214,7 @@ describe("converter injection validation", () => {
     expect(
       parseTrustedInjectionResult(
         data,
-        "https://junkyardpizzeria.ca/converter",
+        "https://www.willowindfarm.ca/converter",
       ),
     ).toEqual({ requestId: "42-1", status: "filled" });
   });

@@ -109,7 +109,7 @@ docs: add MVP implementation tracker
   - Verification: Run policy tests for every allowed, confirmed, and blocked destination class.
   - Commit: `feat: enforce converter navigation policy`
 
-- [ ] 21. Build the lazy, session-mounted Download WebView with secure Android settings and request-ID remounting.
+- [x] 21. Build the lazy, session-mounted Download WebView with secure Android settings and request-ID remounting.
   - Verification: Run WebView configuration and replacement-handoff tests, lint, type-check, and an Android smoke test.
   - Commit: `feat: build converter WebView`
 
