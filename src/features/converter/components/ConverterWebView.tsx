@@ -16,6 +16,7 @@ import {
   ThemedText,
   useTheme,
 } from "@/theme";
+import { testAdaptersEnabled } from "@/config";
 
 import {
   buildConverterInjectionScript,
@@ -410,7 +411,7 @@ export function ConverterWebView({
         source={source}
         style={styles.webView}
         thirdPartyCookiesEnabled={false}
-        webviewDebuggingEnabled={__DEV__}
+        webviewDebuggingEnabled={__DEV__ || testAdaptersEnabled}
       />
       {recoveryStatus ? (
         <RecoveryOverlay

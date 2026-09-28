@@ -1,0 +1,51 @@
+appId: com.jhonlaylopez.tracksy
+name: Tracksy deterministic Android smoke flow
+tags:
+  - smoke
+androidWebViewHierarchy: devtools
+---
+- launchApp:
+    clearState: true
+
+- assertVisible: "Tracksy"
+- tapOn:
+    text: "Search YouTube"
+- inputText: "fixture"
+- hideKeyboard
+- tapOn:
+    text: "Search"
+
+- extendedWaitUntil:
+    visible: "Tracksy Fixture One"
+    timeout: 10000
+- assertVisible: "Tracksy Fixture Two"
+- tapOn:
+    text: "Use Tracksy Fixture One link"
+
+- extendedWaitUntil:
+    visible: "Converter test page"
+    timeout: 15000
+- assertVisible:
+    text: 'https://www\.youtube\.com/watch\?v=dQw4w9WgXcQ'
+- assertVisible: "Link ready; Convert was not pressed"
+- assertNotVisible: "Convert activated"
+
+- tapOn:
+    id: "discover-tab"
+- assertVisible: "Tracksy Fixture One"
+- scrollUntilVisible:
+    element:
+      text: "Use Tracksy Fixture Two link"
+    direction: DOWN
+    timeout: 10000
+- tapOn:
+    text: "Use Tracksy Fixture Two link"
+
+- extendedWaitUntil:
+    visible:
+      text: 'https://www\.youtube\.com/watch\?v=M7lc1UVf-VE'
+    timeout: 15000
+- assertVisible: "Link ready; Convert was not pressed"
+- assertNotVisible:
+    text: 'https://www\.youtube\.com/watch\?v=dQw4w9WgXcQ'
+- assertNotVisible: "Convert activated"
