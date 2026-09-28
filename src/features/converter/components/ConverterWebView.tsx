@@ -1,11 +1,18 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { StyleSheet } from "react-native";
 import {
   WebView,
   type WebViewProps,
 } from "react-native-webview";
 
-import { CONVERTER_ORIGIN } from "../injection";
+import {
+  buildConverterInjectionScript,
+  CONVERTER_ORIGIN,
+  isTrustedConverterOrigin,
+  parseTrustedInjectionResult,
+  type ConverterInjection,
+  type InjectionResult,
+} from "../injection";
 import {
   decideConverterNavigation,
   type ConverterNavigationDecision,
@@ -22,17 +29,25 @@ type ShouldStartLoadRequest = Parameters<
 type WebViewOpenWindowEvent = Parameters<
   NonNullable<WebViewProps["onOpenWindow"]>
 >[0];
+type WebViewLoadEndEvent = Parameters<
+  NonNullable<WebViewProps["onLoadEnd"]>
+>[0];
+type WebViewMessageEvent = Parameters<
+  NonNullable<WebViewProps["onMessage"]>
+>[0];
 type ExternalNavigationDecision = Extract<
   ConverterNavigationDecision,
   { action: "confirm_external" }
 >;
 
 export type ConverterWebViewProps = {
+  handoff?: ConverterInjection;
   onExternalNavigationRequest?: (
     decision: ExternalNavigationDecision,
   ) => void;
+  onFilled?: (requestId: string) => void;
+  onInjectionResult?: (result: InjectionResult) => void;
   onPopupBlocked?: () => void;
-  requestId?: string;
 };
 
 function useConverterSessionKey(requestId?: string) {
@@ -52,11 +67,60 @@ function useConverterSessionKey(requestId?: string) {
 }
 
 export function ConverterWebView({
+  handoff,
   onExternalNavigationRequest,
+  onFilled,
+  onInjectionResult,
   onPopupBlocked,
-  requestId,
 }: ConverterWebViewProps) {
+  const requestId = handoff?.requestId;
   const sessionKey = useConverterSessionKey(requestId);
+  const webViewRef = useRef<WebView>(null);
+  const completedRequestId = useRef<string | undefined>(undefined);
+  const handleLoadEnd = useCallback(
+    (event: WebViewLoadEndEvent) => {
+      if (
+        !handoff ||
+        completedRequestId.current === handoff.requestId ||
+        !isTrustedConverterOrigin(event.nativeEvent.url)
+      ) {
+        return;
+      }
+
+      webViewRef.current?.injectJavaScript(
+        buildConverterInjectionScript(handoff),
+      );
+    },
+    [handoff],
+  );
+  const handleMessage = useCallback(
+    (event: WebViewMessageEvent) => {
+      const result = parseTrustedInjectionResult(
+        event.nativeEvent.data,
+        event.nativeEvent.url,
+      );
+
+      if (
+        !result ||
+        !handoff ||
+        result.requestId !== handoff.requestId ||
+        completedRequestId.current === result.requestId
+      ) {
+        return;
+      }
+
+      if (result.status === "filled") {
+        completedRequestId.current = result.requestId;
+      }
+
+      onInjectionResult?.(result);
+
+      if (result.status === "filled") {
+        onFilled?.(result.requestId);
+      }
+    },
+    [handoff, onFilled, onInjectionResult],
+  );
   const handleShouldStartLoad = useCallback(
     (request: ShouldStartLoadRequest) => {
       const decision = decideConverterNavigation({
@@ -89,6 +153,7 @@ export function ConverterWebView({
   return (
     <WebView
       key={sessionKey}
+      ref={webViewRef}
       accessibilityLabel="Third-party converter"
       allowFileAccess={false}
       allowFileAccessFromFileURLs={false}
@@ -102,6 +167,8 @@ export function ConverterWebView({
       javaScriptEnabled
       mediaPlaybackRequiresUserAction
       mixedContentMode="never"
+      onLoadEnd={handleLoadEnd}
+      onMessage={handleMessage}
       onOpenWindow={handleOpenWindow}
       onShouldStartLoadWithRequest={handleShouldStartLoad}
       originWhitelist={HTTPS_ORIGIN_WHITELIST}

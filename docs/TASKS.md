@@ -113,7 +113,7 @@ docs: add MVP implementation tracker
   - Verification: Run WebView configuration and replacement-handoff tests, lint, type-check, and an Android smoke test.
   - Commit: `feat: build converter WebView`
 
-- [ ] 22. Connect injection lifecycle handling and matching-request success clearing.
+- [x] 22. Connect injection lifecycle handling and matching-request success clearing.
   - Verification: Run tests for filled, wrong-origin, missing-field, script-error, duplicate, and stale-message cases.
   - Commit: `feat: connect converter autofill flow`
 

@@ -11,8 +11,11 @@ import {
 
 export default function DownloadScreen() {
   const theme = useTheme();
-  const requestId = useConverterHandoffStore(
-    (state) => state.handoff?.requestId,
+  const handoff = useConverterHandoffStore(
+    (state) => state.handoff,
+  );
+  const clearHandoff = useConverterHandoffStore(
+    (state) => state.clearHandoff,
   );
 
   return (
@@ -49,7 +52,10 @@ export default function DownloadScreen() {
               },
             ]}
           >
-            <ConverterWebView requestId={requestId} />
+            <ConverterWebView
+              handoff={handoff}
+              onFilled={clearHandoff}
+            />
           </View>
         </View>
       </SafeAreaView>
