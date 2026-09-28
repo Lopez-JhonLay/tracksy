@@ -117,7 +117,7 @@ docs: add MVP implementation tracker
   - Verification: Run tests for filled, wrong-origin, missing-field, script-error, duplicate, and stale-message cases.
   - Commit: `feat: connect converter autofill flow`
 
-- [ ] 23. Add native loading, offline, page-error, renderer-recovery, reload, and manual-paste states.
+- [x] 23. Add native loading, offline, page-error, renderer-recovery, reload, and manual-paste states.
   - Verification: Run component tests for every state and recovery action.
   - Commit: `feat: add converter recovery states`
 

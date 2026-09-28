@@ -1,16 +1,26 @@
-import { render } from "@testing-library/react-native";
+import { useNetInfo } from "@react-native-community/netinfo";
+import {
+  act,
+  fireEvent,
+  render,
+  waitFor,
+} from "@testing-library/react-native";
 import type { ForwardedRef, PropsWithChildren } from "react";
 import type { WebViewProps } from "react-native-webview";
 
-import type { ConverterInjection, InjectionResult } from "../injection";
 import { ThemeProvider } from "@/theme";
 
+import type { ConverterInjection, InjectionResult } from "../injection";
 import { ConverterWebView } from "./ConverterWebView";
 
 let mockLatestProps: WebViewProps | undefined;
 let mockMountCount = 0;
 let mockUnmountCount = 0;
 const mockInjectJavaScript = jest.fn();
+const mockReload = jest.fn();
+const mockUseNetInfo = useNetInfo as jest.MockedFunction<
+  typeof useNetInfo
+>;
 
 jest.mock("react-native-webview", () => {
   const mockReact = jest.requireActual<typeof import("react")>("react");
@@ -21,13 +31,18 @@ jest.mock("react-native-webview", () => {
     WebView: mockReact.forwardRef(
       (
         props: WebViewProps,
-        ref: ForwardedRef<{ injectJavaScript(script: string): void }>,
+        ref: ForwardedRef<{
+          injectJavaScript(script: string): void;
+          reload(): void;
+        }>,
       ) => {
-    const mockReact = jest.requireActual<typeof import("react")>("react");
         mockLatestProps = props;
         mockReact.useImperativeHandle(
           ref,
-          () => ({ injectJavaScript: mockInjectJavaScript }),
+          () => ({
+            injectJavaScript: mockInjectJavaScript,
+            reload: mockReload,
+          }),
           [],
         );
         mockReact.useEffect(() => {
@@ -60,6 +75,12 @@ type WebViewLoadEndEvent = Parameters<
 >[0];
 type WebViewMessageEvent = Parameters<
   NonNullable<WebViewProps["onMessage"]>
+>[0];
+type WebViewErrorEvent = Parameters<
+  NonNullable<WebViewProps["onError"]>
+>[0];
+type WebViewRenderGoneEvent = Parameters<
+  NonNullable<WebViewProps["onRenderProcessGone"]>
 >[0];
 
 const HANDOFF: ConverterInjection = {
@@ -106,12 +127,40 @@ function messageEvent(
   } as WebViewMessageEvent;
 }
 
+function errorEvent(): WebViewErrorEvent {
+  return {
+    nativeEvent: {
+      url: "https://www.willowindfarm.ca/",
+    },
+    preventDefault: jest.fn(),
+  } as unknown as WebViewErrorEvent;
+}
+
+function renderGoneEvent(): WebViewRenderGoneEvent {
+  return {
+    nativeEvent: { didCrash: true },
+  } as WebViewRenderGoneEvent;
+}
+
+async function finishTrustedLoad() {
+  await act(async () => {
+    currentProps().onLoadEnd?.(
+      loadEndEvent("https://www.willowindfarm.ca/"),
+    );
+  });
+}
+
 describe("ConverterWebView", () => {
   beforeEach(() => {
     mockLatestProps = undefined;
     mockMountCount = 0;
     mockUnmountCount = 0;
     mockInjectJavaScript.mockReset();
+    mockReload.mockReset();
+    mockUseNetInfo.mockReturnValue({
+      isConnected: true,
+      isInternetReachable: true,
+    } as ReturnType<typeof useNetInfo>);
   });
 
   it("loads the converter with the required secure Android settings", async () => {
@@ -210,12 +259,16 @@ describe("ConverterWebView", () => {
       wrapper: Wrapper,
     });
 
-    currentProps().onLoadEnd?.(loadEndEvent("https://example.com/"));
+    await act(async () => {
+      currentProps().onLoadEnd?.(loadEndEvent("https://example.com/"));
+    });
     expect(mockInjectJavaScript).not.toHaveBeenCalled();
 
-    currentProps().onLoadEnd?.(
-      loadEndEvent("https://www.willowindfarm.ca/"),
-    );
+    await act(async () => {
+      currentProps().onLoadEnd?.(
+        loadEndEvent("https://www.willowindfarm.ca/"),
+      );
+    });
     expect(mockInjectJavaScript).toHaveBeenCalledTimes(1);
     expect(mockInjectJavaScript).toHaveBeenCalledWith(
       expect.stringContaining(JSON.stringify(HANDOFF.youtubeUrl)),
@@ -238,8 +291,10 @@ describe("ConverterWebView", () => {
       status: "filled",
     };
 
-    currentProps().onMessage?.(messageEvent(filled));
-    currentProps().onMessage?.(messageEvent(filled));
+    await act(async () => {
+      currentProps().onMessage?.(messageEvent(filled));
+      currentProps().onMessage?.(messageEvent(filled));
+    });
 
     expect(onInjectionResult).toHaveBeenCalledTimes(1);
     expect(onInjectionResult).toHaveBeenCalledWith(filled);
@@ -267,7 +322,9 @@ describe("ConverterWebView", () => {
       status,
     };
 
-    currentProps().onMessage?.(messageEvent(result));
+    await act(async () => {
+      currentProps().onMessage?.(messageEvent(result));
+    });
 
     expect(onInjectionResult).toHaveBeenCalledWith(result);
     expect(onFilled).not.toHaveBeenCalled();
@@ -303,5 +360,141 @@ describe("ConverterWebView", () => {
 
     expect(onInjectionResult).not.toHaveBeenCalled();
     expect(onFilled).not.toHaveBeenCalled();
+  });
+
+  it("shows native loading feedback until the converter finishes loading", async () => {
+    const screen = await render(<ConverterWebView />, {
+      wrapper: Wrapper,
+    });
+
+    expect(screen.getByLabelText("Loading converter")).toBeTruthy();
+
+    await finishTrustedLoad();
+
+    await waitFor(() =>
+      expect(screen.queryByLabelText("Loading converter")).toBeNull(),
+    );
+  });
+
+  it("shows offline recovery and reloads without discarding the session", async () => {
+    mockUseNetInfo.mockReturnValue({
+      isConnected: false,
+      isInternetReachable: false,
+    } as ReturnType<typeof useNetInfo>);
+    const screen = await render(<ConverterWebView handoff={HANDOFF} />, {
+      wrapper: Wrapper,
+    });
+
+    expect(screen.getByText("You're offline")).toBeTruthy();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Reload" }),
+    );
+
+    expect(mockReload).toHaveBeenCalledTimes(1);
+  });
+
+  it("shows page-error recovery and reloads the current WebView", async () => {
+    const screen = await render(<ConverterWebView handoff={HANDOFF} />, {
+      wrapper: Wrapper,
+    });
+    const event = errorEvent();
+
+    await act(async () => {
+      currentProps().onError?.(event);
+    });
+
+    expect(event.preventDefault).toHaveBeenCalledTimes(1);
+    expect(screen.getByText("Converter unavailable")).toBeTruthy();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Reload" }),
+    );
+    expect(mockReload).toHaveBeenCalledTimes(1);
+  });
+
+  it("recovers a terminated renderer by recreating the WebView", async () => {
+    const screen = await render(<ConverterWebView handoff={HANDOFF} />, {
+      wrapper: Wrapper,
+    });
+
+    await act(async () => {
+      currentProps().onRenderProcessGone?.(renderGoneEvent());
+    });
+
+    expect(screen.getByText("Converter stopped")).toBeTruthy();
+    expect(mockMountCount).toBe(1);
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Reload" }),
+    );
+    expect(mockMountCount).toBe(2);
+    expect(mockUnmountCount).toBe(1);
+    expect(mockReload).not.toHaveBeenCalled();
+  });
+
+  it("keeps manual paste available when the converter field is missing", async () => {
+    const screen = await render(<ConverterWebView handoff={HANDOFF} />, {
+      wrapper: Wrapper,
+    });
+    await finishTrustedLoad();
+
+    await act(async () => {
+      currentProps().onMessage?.(
+        messageEvent({
+          requestId: HANDOFF.requestId,
+          status: "field_missing",
+        }),
+      );
+    });
+
+    expect(screen.getByText("Paste link manually")).toBeTruthy();
+    expect(screen.getByText(/still in the clipboard/)).toBeTruthy();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Paste manually" }),
+    );
+    expect(screen.queryByText("Paste link manually")).toBeNull();
+  });
+
+  it("retries autofill after a script error", async () => {
+    const screen = await render(<ConverterWebView handoff={HANDOFF} />, {
+      wrapper: Wrapper,
+    });
+    await finishTrustedLoad();
+    expect(mockInjectJavaScript).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      currentProps().onMessage?.(
+        messageEvent({
+          requestId: HANDOFF.requestId,
+          status: "script_error",
+        }),
+      );
+    });
+
+    expect(screen.getByText("Autofill failed")).toBeTruthy();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Retry autofill" }),
+    );
+    expect(mockInjectJavaScript).toHaveBeenCalledTimes(2);
+  });
+
+  it("reloads after a wrong-origin injection result", async () => {
+    const screen = await render(<ConverterWebView handoff={HANDOFF} />, {
+      wrapper: Wrapper,
+    });
+    await finishTrustedLoad();
+
+    await act(async () => {
+      currentProps().onMessage?.(
+        messageEvent({
+          requestId: HANDOFF.requestId,
+          status: "wrong_origin",
+        }),
+      );
+    });
+
+    expect(screen.getByText("Converter changed")).toBeTruthy();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Reload" }),
+    );
+    expect(mockReload).toHaveBeenCalledTimes(1);
   });
 });
