@@ -121,7 +121,7 @@ docs: add MVP implementation tracker
   - Verification: Run component tests for every state and recovery action.
   - Commit: `feat: add converter recovery states`
 
-- [ ] 24. Add external-navigation confirmation, permanent browser fallback, and best-effort Android download handling.
+- [x] 24. Add external-navigation confirmation, permanent browser fallback, and best-effort Android download handling.
   - Verification: Run tests for blocked schemes, confirmation, browser linking, and download fallback, then smoke-test on Android.
   - Commit: `feat: add converter browser fallback`
 

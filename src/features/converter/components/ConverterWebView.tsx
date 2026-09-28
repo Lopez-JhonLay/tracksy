@@ -235,6 +235,7 @@ export function ConverterWebView({
   const [recoveryGeneration, setRecoveryGeneration] = useState(0);
   const webViewRef = useRef<WebView>(null);
   const currentUrl = useRef(CONVERTER_URL);
+  const completedLoadSessionKey = useRef<string | undefined>(undefined);
   const completedRequestId = useRef<string | undefined>(undefined);
   const isOffline =
     network.isConnected === false ||
@@ -262,9 +263,12 @@ export function ConverterWebView({
     [handoff],
   );
   const handleLoadStart = useCallback(() => {
-    setPageStatus("loading");
     setInjectionFailure(undefined);
-  }, []);
+
+    if (completedLoadSessionKey.current !== sessionKey) {
+      setPageStatus("loading");
+    }
+  }, [sessionKey]);
   const handleLoadEnd = useCallback(
     (event: WebViewLoadEndEvent) => {
       if ("code" in event.nativeEvent) {
@@ -272,10 +276,11 @@ export function ConverterWebView({
       }
 
       currentUrl.current = event.nativeEvent.url;
+      completedLoadSessionKey.current = sessionKey;
       setPageStatus("ready");
       injectActiveHandoff(event.nativeEvent.url);
     },
-    [injectActiveHandoff],
+    [injectActiveHandoff, sessionKey],
   );
   const handleLoadError = useCallback((event: WebViewErrorEvent) => {
     event.preventDefault();
@@ -323,6 +328,7 @@ export function ConverterWebView({
     [handoff, onFilled, onInjectionResult],
   );
   const handleReload = useCallback(() => {
+    completedLoadSessionKey.current = undefined;
     setInjectionFailure(undefined);
     setPageStatus("loading");
 
@@ -380,11 +386,13 @@ export function ConverterWebView({
         allowUniversalAccessFromFileURLs={false}
         allowsProtectedMedia={false}
         cacheEnabled={false}
+        downloadingMessage="Downloading file..."
         domStorageEnabled
         geolocationEnabled={false}
         incognito
         javaScriptCanOpenWindowsAutomatically={false}
         javaScriptEnabled
+        lackPermissionToDownloadMessage="Tracksy could not start this download. Use Open in browser instead."
         mediaPlaybackRequiresUserAction
         mixedContentMode="never"
         onError={handleLoadError}

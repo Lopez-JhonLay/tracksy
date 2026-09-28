@@ -65,9 +65,9 @@ If automatic filling fails, Tracksy must keep the URL in the clipboard and show 
 - Provide reload and open-in-browser actions.
 - Preserve the selected URL when the WebView reloads.
 - Block unexpected popup windows and unsafe URL schemes.
-- Open unrelated external navigation in the system browser.
+- Open confirmed external navigation in an Android Custom Tab, with the system browser as a fallback.
 - Hand supported file downloads to Android's system download handling where technically possible.
-- Fall back to the external browser if the WebView cannot complete a file download.
+- Fall back to an Android Custom Tab, then the system browser, if the WebView cannot complete a file download.
 
 ### Security and Privacy
 

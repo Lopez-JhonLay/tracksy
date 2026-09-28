@@ -173,11 +173,14 @@ describe("ConverterWebView", () => {
       allowUniversalAccessFromFileURLs: false,
       allowsProtectedMedia: false,
       cacheEnabled: false,
+      downloadingMessage: "Downloading file...",
       domStorageEnabled: true,
       geolocationEnabled: false,
       incognito: true,
       javaScriptCanOpenWindowsAutomatically: false,
       javaScriptEnabled: true,
+      lackPermissionToDownloadMessage:
+        "Tracksy could not start this download. Use Open in browser instead.",
       mediaPlaybackRequiresUserAction: true,
       mixedContentMode: "never",
       originWhitelist: ["https://*"],
@@ -374,6 +377,23 @@ describe("ConverterWebView", () => {
     await waitFor(() =>
       expect(screen.queryByLabelText("Loading converter")).toBeNull(),
     );
+  });
+
+  it("does not cover same-session converter routes with a stuck loader", async () => {
+    const screen = await render(<ConverterWebView />, {
+      wrapper: Wrapper,
+    });
+    await finishTrustedLoad();
+
+    await act(async () => {
+      currentProps().onLoadStart?.({
+        nativeEvent: {
+          url: "https://www.willowindfarm.ca/settings/audio",
+        },
+      } as Parameters<NonNullable<WebViewProps["onLoadStart"]>>[0]);
+    });
+
+    expect(screen.queryByLabelText("Loading converter")).toBeNull();
   });
 
   it("shows offline recovery and reloads without discarding the session", async () => {

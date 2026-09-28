@@ -23,7 +23,7 @@ User
   -> Download tab WebView
   -> Autofill willowindfarm.ca
   -> User taps Convert
-  -> Android system download or external-browser fallback
+  -> Android system download or Custom Tab/browser fallback
 ```
 
 ## 2. Architectural Decisions
@@ -36,6 +36,7 @@ User
 | Server state | TanStack Query |
 | Cross-tab state | Zustand, in memory only |
 | Web content | `react-native-webview` |
+| Browser fallback | `expo-web-browser` Custom Tabs, then `expo-linking` |
 | YouTube access | Direct YouTube Data API v3 calls from the Android client |
 | Converter | `https://www.willowindfarm.ca/` loaded as untrusted third-party content |
 | Persistence | None across process restarts |
@@ -50,7 +51,7 @@ User
 - The YouTube API key is present in the APK and must be treated as extractable client configuration, not as a secret.
 - Search and converter state survive tab changes only while the app process remains alive.
 - Converter availability, markup, redirects, output, and download behavior are outside Tracksy's control.
-- Android WebView download behavior is used on a best-effort basis. The system browser is the supported fallback.
+- Android WebView download behavior is used on a best-effort basis. An attached Custom Tab is the primary fallback, with the system browser used only if Custom Tabs fail.
 - A change to the converter's `#url` field or navigation flow may require an application update.
 
 ## 3. System Context
@@ -76,7 +77,7 @@ User
                                                 │
                                                 ▼
                                   Android download handling
-                                  or external browser fallback
+                                  or Custom Tab/browser fallback
 ```
 
 Trust boundaries:
@@ -401,7 +402,7 @@ On `filled`, clear the matching handoff and hide fallback UI. Do not click, subm
 | Load failure | Show offline/page-unavailable state |
 | Render process gone | Recreate WebView and retain the current handoff |
 
-Reloading returns to the converter home page and retries injection with the same handoff. Opening in the external browser leaves the selected YouTube URL in the clipboard.
+Reloading returns to the converter home page and retries injection with the same handoff. Opening a Custom Tab or the external browser leaves the selected YouTube URL in the clipboard.
 
 ## 9. WebView Security Policy
 
@@ -430,7 +431,7 @@ Use `originWhitelist={["https://*"]}` together with `onShouldStartLoadWithReques
 | Destination | Action |
 |---|---|
 | Exact `https://www.willowindfarm.ca` origin | Allow inside WebView |
-| Different HTTPS origin | Block, show hostname confirmation, then optionally open through `Linking` |
+| Different HTTPS origin | Block, show hostname confirmation, then optionally open through an `expo-web-browser` Custom Tab; fall back to `Linking` on failure |
 | HTTP | Block |
 | `file:`, `content:`, `data:`, `javascript:` | Block |
 | `intent:`, `market:`, custom schemes | Block in MVP |
@@ -452,7 +453,9 @@ Tracksy does not implement a custom downloader.
 2. Configure user-facing download and permission-failure messages where supported by the WebView package.
 3. Do not request legacy broad storage permission on Android 10+.
 4. Keep **Open in browser** available in the Download screen toolbar at all times.
-5. If the converter uses an unsupported blob, redirect, cookie flow, MIME type, or download host, the user opens the converter in the system browser and completes the download there.
+5. Open confirmed external HTTPS destinations through `expo-web-browser` with `createTask: false`, keeping the Custom Tab attached to Tracksy's Android task.
+6. If Custom Tabs are unavailable, fall back to `Linking.openURL` and the system browser.
+7. If the converter uses an unsupported blob, redirect, cookie flow, MIME type, or download host, the user completes the download through this browser fallback chain.
 
 Tracksy does not infer that a download succeeded, track download progress, move files, rename output, or maintain download history.
 
