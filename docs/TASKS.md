@@ -101,7 +101,7 @@ docs: add MVP implementation tracker
 
 ## Converter WebView
 
-- [ ] 19. Implement the injection builder, exact-origin checks, native input setter, input events, and validated result schema.
+- [x] 19. Implement the injection builder, exact-origin checks, native input setter, input events, and validated result schema.
   - Verification: Run unit tests for escaping, success, every failure status, invalid messages, and origin mismatch.
   - Commit: `feat: add converter URL injection`
 
