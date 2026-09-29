@@ -48,6 +48,7 @@ async function renderScreen(
   adapter: YouTubeApiAdapter | null,
   openVideo?: OpenYouTubeVideo,
   useLink?: UseVideoLink,
+  initialQuery?: string,
 ) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { gcTime: Infinity } },
@@ -64,6 +65,7 @@ async function renderScreen(
   const rendered = await render(
     <DiscoverSearchScreen
       adapter={adapter}
+      initialQuery={initialQuery}
       locale={LOCALE}
       openVideo={openVideo}
       useLink={useLink}
@@ -90,6 +92,28 @@ async function cleanupScreen(screen: RenderedScreen) {
 }
 
 describe("DiscoverSearchScreen", () => {
+  it("loads a music discovery feed while leaving search empty", async () => {
+    const search = jest.fn(async (): Promise<SearchPage> => ({
+      items: [result("abcdefghijk", "Discovery track")],
+    }));
+    const screen = await renderScreen(
+      createAdapter(search),
+      undefined,
+      undefined,
+      "chill music",
+    );
+
+    expect(screen.getByLabelText("Search YouTube")).toHaveProp("value", "");
+    expect(screen.getByLabelText("Music for you")).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText("Discovery track")).toBeTruthy(),
+    );
+    expect(search).toHaveBeenCalledWith(
+      expect.objectContaining({ query: "chill music", locale: LOCALE }),
+    );
+    await cleanupScreen(screen);
+  });
+
   it("searches only after explicit submission and renders results", async () => {
     const search = jest.fn(async (): Promise<SearchPage> => ({
       items: [result("abcdefghijk", "Lo-fi mix")],
@@ -233,15 +257,12 @@ describe("DiscoverSearchScreen", () => {
     await cleanupScreen(screen);
   });
 
-  it("sends a result to the converter from Use Link", async () => {
+  it("copies a result and opens the converter", async () => {
     const selectedResult = result("abcdefghijk", "Use this link");
     const useLink = jest.fn(async () => ({
-      handoff: {
-        requestId: "42-1",
-        youtubeUrl: selectedResult.canonicalUrl,
-        selectedAt: 42,
-      },
       clipboardStatus: "copied" as const,
+      converterOpenStatus: "opened" as const,
+      youtubeUrl: selectedResult.canonicalUrl,
     }));
     const screen = await renderScreen(
       createAdapter(
@@ -255,7 +276,9 @@ describe("DiscoverSearchScreen", () => {
 
     await submit(screen);
     const useLinkButton = await waitFor(() =>
-      screen.getByRole("button", { name: "Use Use this link link" }),
+      screen.getByRole("button", {
+        name: "Copy and open converter for Use this link",
+      }),
     );
     await fireEvent.press(useLinkButton);
 
@@ -269,12 +292,9 @@ describe("DiscoverSearchScreen", () => {
       .spyOn(ToastAndroid, "show")
       .mockImplementation(() => undefined);
     const useLink = jest.fn(async () => ({
-      handoff: {
-        requestId: "42-1",
-        youtubeUrl: selectedResult.canonicalUrl,
-        selectedAt: 42,
-      },
       clipboardStatus: "unavailable" as const,
+      converterOpenStatus: "opened" as const,
+      youtubeUrl: selectedResult.canonicalUrl,
     }));
     const screen = await renderScreen(
       createAdapter(
@@ -288,18 +308,53 @@ describe("DiscoverSearchScreen", () => {
 
     await submit(screen);
     const useLinkButton = await waitFor(() =>
-      screen.getByRole("button", { name: "Use Clipboard fallback link" }),
+      screen.getByRole("button", {
+        name: "Copy and open converter for Clipboard fallback",
+      }),
     );
     await fireEvent.press(useLinkButton);
 
     await waitFor(() =>
       expect(toast).toHaveBeenCalledWith(
-        "Link sent, but it could not be copied to the clipboard.",
+        "Converter opened, but the link could not be copied.",
         ToastAndroid.SHORT,
       ),
     );
     expect(useLink).toHaveBeenCalledWith(selectedResult);
     toast.mockRestore();
+    await cleanupScreen(screen);
+  });
+
+  it("reports when the converter browser cannot open", async () => {
+    const selectedResult = result("abcdefghijk", "Browser fallback");
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => undefined);
+    const useLink = jest.fn(async () => ({
+      clipboardStatus: "copied" as const,
+      converterOpenStatus: "unavailable" as const,
+      youtubeUrl: selectedResult.canonicalUrl,
+    }));
+    const screen = await renderScreen(
+      createAdapter(jest.fn(async () => ({ items: [selectedResult] }))),
+      undefined,
+      useLink,
+    );
+
+    await submit(screen);
+    await fireEvent.press(
+      await waitFor(() =>
+        screen.getByRole("button", {
+          name: "Copy and open converter for Browser fallback",
+        }),
+      ),
+    );
+
+    await waitFor(() =>
+      expect(alert).toHaveBeenCalledWith(
+        "Unable to open converter",
+        "The link may be in your clipboard. Try Copy & Open again.",
+      ),
+    );
+    alert.mockRestore();
     await cleanupScreen(screen);
   });
 

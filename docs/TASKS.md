@@ -1,153 +1,44 @@
 # Tracksy MVP Tasks
 
-This is the ordered implementation tracker for the Tracksy MVP. Product behavior and technical contracts remain defined in [PRD.md](./PRD.md), [ARCHITECTURE.md](./ARCHITECTURE.md), and [UI-DESIGN.md](./UI-DESIGN.md).
+This tracker reflects the current single-screen, browser-first MVP. Detailed behavior lives in [PRD.md](./PRD.md), [ARCHITECTURE.md](./ARCHITECTURE.md), and [UI-DESIGN.md](./UI-DESIGN.md).
 
-## How to use this tracker
+- Work on the first unchecked task unless the user selects another.
+- Include tests with the behavior they verify and check a task only after its checks pass.
+- The user reviews, commits, and pushes. Agents never commit automatically.
+- Never record credentials, API keys, certificates, or private test data.
 
-- Work on the first unchecked task whose dependencies are complete unless the user selects another task.
-- Keep each task focused enough for one commit and include its tests in the same change.
-- Mark a task complete only after its implementation and listed verification pass.
-- Update its checkbox within the same change prepared for commit.
-- Use the suggested Conventional Commit message unless the completed work requires a more accurate scope.
-- Agents must not commit or push automatically. The user reviews, commits, and pushes manually.
-- Never record API keys, certificates, credentials, or private test data here.
-- Manual tasks do not require empty commits. Use the stated commit only when repository files change.
+## Completed Foundation and Discovery
 
-Suggested commit for adding this tracker:
+- [x] 1. Scaffold the Expo TypeScript app. Commit: `ec00663`.
+- [x] 2. Define product, architecture, and agent standards. Commits: `1a327f7`, `d7e3ba7`.
+- [x] 3. Add the Tracksy light/dark design system. Commit: `feat: add Tracksy design system`.
+- [x] 4. Add Expo Router, application providers, `@/` imports, and Android/EAS configuration. Commit: `chore: add application foundations`.
+- [x] 5. Add runtime configuration, locale fallback, and Jest/React Native Testing Library. Commit: `test: add unit and component test setup`.
+- [x] 6. Add discovery contracts, validation, canonical URLs, entity decoding, and duration parsing. Commit: `feat: add discovery domain utilities`.
+- [x] 7. Add the YouTube API adapter and typed failure mapping. Commit: `feat: add YouTube search adapter`.
+- [x] 8. Add TanStack Query session caching, cancellation, explicit pagination, and deduplication. Commit: `feat: add discovery query state`.
+- [x] 9. Build the Discover search UI and all loading, empty, error, and retry states. Commit: `feat: build Discover search screen`.
+- [x] 10. Add explicit Load More and result metadata. Commit: `feat: add discovery pagination`.
+- [x] 11. Add Open in YouTube with Android linking fallback. Commit: `feat: open discovery results externally`.
+- [x] 12. Add clipboard plus attached-browser converter handoff. Commit: `feat: open converter from discovery`.
 
-```text
-docs: add MVP implementation tracker
-```
+The earlier embedded Download/WebView implementation was retired after device testing established the attached-browser flow as the MVP.
 
-## Baseline
+## Current Simplification
 
-- [x] 1. Scaffold the Expo TypeScript application.
-  - Verification: Blank Expo application, pnpm lockfile, TypeScript, lint, and Expo Doctor checks completed.
-  - Commit: `ec00663` (existing)
+- [x] 13. Remove Download navigation, WebView/session state, obsolete dependencies, and deterministic embedded-converter adapters; add the rotating initial music feed; align documentation with the one-screen flow.
+  - Verification: focused and complete tests, lint, TypeScript, theme/config checks, Expo Doctor, and manual Expo Go smoke test.
+  - Commit: `feat: simplify Tracksy discovery flow`
 
-- [x] 2. Finalize the PRD and architecture.
-  - Verification: MVP scope, runtime flow, interfaces, security boundaries, testing, and release approach documented.
-  - Commit: `1a327f7` (existing)
+## Release
 
-- [x] 3. Define persistent agent standards.
-  - Verification: Stack, commands, conventions, guardrails, Git rules, and definition of done documented.
-  - Commit: `d7e3ba7` (existing)
+- [ ] 14. **Manual:** Configure separate development and preview YouTube keys with package/SHA-1/API restrictions, quotas, and alerts.
+  - Commit: N/A; never record credential values.
 
-## Foundation
+- [ ] 15. **Manual:** Verify real search, Load More, YouTube linking, Copy & Open, manual paste, and light/dark behavior on Android 10 and one current Android release.
+  - Commit: N/A unless results are documented.
 
-- [x] 4. Implement the documented light and dark theme tokens, theme provider, reusable primitives, and system-theme behavior.
-  - Verification: Test token contracts and theme selection, render representative primitives in both themes, then run lint and type-check.
-  - Commit: `feat: add Tracksy design system`
+- [ ] 16. **Manual:** Build and install the EAS preview APK and complete the MVP acceptance flow.
+  - Commit: `docs: record MVP verification` only if verification results are recorded.
 
-- [x] 5. Convert the blank entrypoint to Expo Router with persistent Discover and Download tabs.
-  - Verification: Run lint and type-check, then smoke-test both routes and tab switching on Android.
-  - Commit: `feat: add Tracksy tab navigation`
-
-- [x] 6. Add the shared application structure, `@/` alias, Query client, safe-area provider, and session-store foundation.
-  - Verification: Run lint, type-check, and a provider render test.
-  - Commit: `chore: add application foundations`
-
-- [x] 7. Add the required Expo-compatible dependencies for querying, state, WebView, clipboard, linking, localization, network state, and runtime schemas.
-  - Verification: Validate the lockfile, then run Expo Doctor, lint, and type-check.
-  - Commit: `chore: install Tracksy runtime dependencies`
-
-- [x] 8. Add public environment configuration, startup validation, locale fallback, and a placeholder-only `.env.example`.
-  - Verification: Run configuration and locale unit tests, lint, and type-check.
-  - Commit: `feat: add runtime configuration`
-
-- [x] 9. Configure Android 10 minimum support and EAS development and preview APK profiles without generating native directories.
-  - Verification: Inspect the resolved Expo configuration and run Expo Doctor.
-  - Commit: `build: configure Android and EAS profiles`
-
-- [x] 10. Add Jest and React Native Testing Library with pnpm test scripts and shared mocks.
-  - Verification: Run the sample test, complete test command, lint, and type-check.
-  - Commit: `test: add unit and component test setup`
-
-## Discovery
-
-- [x] 11. Add discovery contracts and utilities for query validation, canonical URLs, locale resolution, HTML entity decoding, and ISO-8601 durations.
-  - Verification: Run focused unit tests for valid, invalid, missing, and fallback inputs, then lint and type-check.
-  - Commit: `feat: add discovery domain utilities`
-
-- [x] 12. Implement the YouTube API adapter with restricted headers, explicit search parameters, duration enrichment, cancellation, response normalization, and typed errors.
-  - Verification: Run mocked adapter tests only; automated tests must not call YouTube.
-  - Commit: `feat: add YouTube search adapter`
-
-- [x] 13. Implement the TanStack infinite-query layer with session caching, explicit pagination, deduplication, and retry rules.
-  - Verification: Run pagination, cancellation, retry, caching, and deduplication tests.
-  - Commit: `feat: add discovery query state`
-
-- [x] 14. Build the Discover search form and result list with loading, empty, offline, quota, configuration, and retry states.
-  - Verification: Run component tests for every state, lint, and type-check.
-  - Commit: `feat: build Discover search screen`
-
-- [x] 15. Add explicit Load More behavior and result metadata presentation, including optional durations.
-  - Verification: Run tests for disabled and loading behavior, page appending, duplicate results, and missing durations.
-  - Commit: `feat: add discovery pagination`
-
-- [ ] 16. Add the Open in YouTube action through Android linking with browser fallback behavior.
-  - Verification: Run mocked linking tests and an Android smoke test with and without the YouTube app available.
-  - Commit: `feat: open discovery results externally`
-
-## Converter handoff
-
-- [x] 17. Implement the session-only Zustand handoff store with unique request IDs and guarded clearing.
-  - Verification: Run unit tests for repeated selections, request-ID uniqueness, matching clears, and stale clears.
-  - Commit: `feat: add converter handoff state`
-
-- [ ] 18. Connect Use Link to the store, Android clipboard, and Download-tab navigation.
-  - Verification: Run component tests for a successful handoff and a non-blocking clipboard failure.
-  - Commit: `feat: send video links to converter`
-
-## Converter WebView
-
-- [x] 19. Implement the injection builder, exact-origin checks, native input setter, input events, and validated result schema.
-  - Verification: Run unit tests for escaping, success, every failure status, invalid messages, and origin mismatch.
-  - Commit: `feat: add converter URL injection`
-
-- [x] 20. Implement the main-frame navigation policy for trusted, external, HTTP, unsafe-scheme, and popup requests.
-  - Verification: Run policy tests for every allowed, confirmed, and blocked destination class.
-  - Commit: `feat: enforce converter navigation policy`
-
-- [x] 21. Build the lazy, session-mounted Download WebView with secure Android settings and request-ID remounting.
-  - Verification: Run WebView configuration and replacement-handoff tests, lint, type-check, and an Android smoke test.
-  - Commit: `feat: build converter WebView`
-
-- [x] 22. Connect injection lifecycle handling and matching-request success clearing.
-  - Verification: Run tests for filled, wrong-origin, missing-field, script-error, duplicate, and stale-message cases.
-  - Commit: `feat: connect converter autofill flow`
-
-- [x] 23. Add native loading, offline, page-error, renderer-recovery, reload, and manual-paste states.
-  - Verification: Run component tests for every state and recovery action.
-  - Commit: `feat: add converter recovery states`
-
-- [x] 24. Add external-navigation confirmation, permanent browser fallback, and best-effort Android download handling.
-  - Verification: Run tests for blocked schemes, confirmation, browser linking, and download fallback, then smoke-test on Android.
-  - Commit: `feat: add converter browser fallback`
-
-## End-to-end and release
-
-- [x] 25. Add build-time fake search and converter adapters that cannot be enabled in preview builds.
-  - Verification: Confirm deterministic fixtures work in tests and the resolved preview configuration excludes the fake adapters.
-  - Commit: `test: add deterministic test adapters`
-
-- [ ] 26. Add Maestro coverage for search, Use Link, autofill without submission, and replacement selection.
-  - Verification: Run the complete deterministic flow on Android and confirm Convert is never activated automatically.
-  - Commit: `test: add Tracksy Android smoke flow`
-
-- [ ] 27. **Manual:** Configure separate development and preview YouTube keys, package and SHA-1 restrictions, API restrictions, quotas, and alerts.
-  - Verification: Confirm each build can search with its matching key and rejects an unmatched package or signing identity.
-  - Commit: N/A. Never record credential values.
-
-- [ ] 28. **Manual:** Verify real search, locale behavior, linking, converter autofill, failure recovery, navigation blocking, and fallback downloads on Android 10 and one current Android version.
-  - Verification: Complete the architecture's manual-device checklist using only authorized media.
-  - Commit: N/A unless verification documentation changes.
-
-- [ ] 29. **Manual:** Build and install the EAS preview APK, confirm debugging and fake adapters are disabled, and complete the MVP acceptance flow.
-  - Verification: From a visible result, reach the converter with the correct URL filled in one tap without automatic submission.
-  - Commit: `docs: record MVP verification` only if results are recorded in the repository.
-
-## MVP completion
-
-The MVP is complete when tasks 1 through 29 are checked and the final preview APK satisfies the success measure in the PRD. Checking a task never grants an agent permission to commit or push.
-
+The MVP is complete when Tasks 1-16 are checked. Checking a task never grants permission to commit or push.

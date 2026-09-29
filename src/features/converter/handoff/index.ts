@@ -1,7 +1,8 @@
 export {
-  sendVideoToConverter,
+  copyAndOpenVideo,
   type ClipboardStatus,
-  type SendVideoToConverterDependencies,
+  type CopyAndOpenVideoDependencies,
+  type ConverterOpenStatus,
   type UseLinkResult,
   type UseVideoLink,
-} from "./send-video-to-converter";
+} from "./copy-and-open-video";

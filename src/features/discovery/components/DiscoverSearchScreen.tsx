@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   StyleSheet,
   TextInput,
   ToastAndroid,
@@ -39,6 +38,7 @@ type MaterialIconName = ComponentProps<
 
 export type DiscoverSearchScreenProps = {
   adapter: YouTubeApiAdapter | null;
+  initialQuery?: string;
   locale: SearchLocale;
   openVideo?: OpenYouTubeVideo;
   useLink?: UseVideoLink;
@@ -135,7 +135,7 @@ function ScreenHeader() {
         Tracksy
       </ThemedText>
       <ThemedText tone="muted">
-        Find a YouTube video and send its link to the converter.
+        Find a YouTube video, then copy and open its link in the converter.
       </ThemedText>
     </View>
   );
@@ -153,49 +153,28 @@ function SearchSkeleton() {
       {[0, 1, 2].map((item) => (
         <Surface
           key={item}
-          padded={false}
-          style={[
-            styles.resultRow,
-            { minHeight: theme.layout.resultThumbnailHeight },
-          ]}
+          style={{ gap: theme.spacing.xs }}
         >
           <View
             style={[
+              styles.skeletonLine,
               {
                 backgroundColor: theme.colors.surfaceMuted,
                 borderRadius: theme.radius.sm,
-                height: theme.layout.resultThumbnailHeight,
-                width: theme.layout.resultThumbnailWidth,
+                height: theme.spacing.md,
               },
             ]}
           />
           <View
             style={[
-              styles.skeletonText,
-              { gap: theme.spacing.xs, padding: theme.spacing.sm },
+              styles.skeletonLineShort,
+              {
+                backgroundColor: theme.colors.surfaceMuted,
+                borderRadius: theme.radius.sm,
+                height: theme.spacing.sm,
+              },
             ]}
-          >
-            <View
-              style={[
-                styles.skeletonLine,
-                {
-                  backgroundColor: theme.colors.surfaceMuted,
-                  borderRadius: theme.radius.sm,
-                  height: theme.spacing.md,
-                },
-              ]}
-            />
-            <View
-              style={[
-                styles.skeletonLineShort,
-                {
-                  backgroundColor: theme.colors.surfaceMuted,
-                  borderRadius: theme.radius.sm,
-                  height: theme.spacing.sm,
-                },
-              ]}
-            />
-          </View>
+          />
         </Surface>
       ))}
     </View>
@@ -284,14 +263,20 @@ function ResultRow({
       const result = await onUseLink(item);
       if (result.clipboardStatus === "unavailable") {
         ToastAndroid.show(
-          "Link sent, but it could not be copied to the clipboard.",
+          "Converter opened, but the link could not be copied.",
           ToastAndroid.SHORT,
+        );
+      }
+      if (result.converterOpenStatus === "unavailable") {
+        Alert.alert(
+          "Unable to open converter",
+          "The link may be in your clipboard. Try Copy & Open again.",
         );
       }
     } catch {
       Alert.alert(
-        "Unable to send link",
-        "Tracksy could not open the Download tab.",
+        "Unable to use link",
+        "Tracksy could not copy and open this link.",
       );
     } finally {
       setSending(false);
@@ -304,22 +289,8 @@ function ResultRow({
       padded={false}
       style={[
         styles.resultRow,
-        { minHeight: theme.layout.resultThumbnailHeight },
       ]}
     >
-      <Image
-        accessibilityIgnoresInvertColors
-        accessibilityLabel={`Thumbnail for ${item.title}`}
-        source={{ uri: item.thumbnailUrl }}
-        style={[
-          {
-            backgroundColor: theme.colors.surfaceMuted,
-            borderRadius: theme.radius.sm,
-            height: theme.layout.resultThumbnailHeight,
-            width: theme.layout.resultThumbnailWidth,
-          },
-        ]}
-      />
       <View
         style={[
           styles.resultText,
@@ -334,15 +305,20 @@ function ResultRow({
             ? `${item.channelTitle} • ${duration}`
             : item.channelTitle}
         </ThemedText>
-        <View style={[styles.resultActions, { gap: theme.spacing.xs }]}>
+        <View
+          style={[
+            styles.resultActions,
+            { gap: theme.spacing.xs, marginTop: theme.spacing.sm },
+          ]}
+        >
           {onUseLink ? (
             <ThemedButton
               accessibilityLabel={
                 sending
-                  ? `Sending ${item.title} to Download`
-                  : `Use ${item.title} link`
+                  ? `Opening converter for ${item.title}`
+                  : `Copy and open converter for ${item.title}`
               }
-              label={sending ? "Sending" : "Use Link"}
+              label={sending ? "Opening" : "Copy & Open"}
               leadingIcon={
                 <MaterialCommunityIcons
                   accessibilityElementsHidden
@@ -374,7 +350,7 @@ function ResultRow({
             loading={opening}
             onPress={() => void handleOpen()}
             style={styles.resultAction}
-            variant="tertiary"
+            variant="secondary"
           />
         </View>
       </View>
@@ -491,18 +467,23 @@ function UnconfiguredDiscoverScreen() {
 
 function ConfiguredDiscoverScreen({
   adapter,
+  initialQuery = "",
   locale,
   openVideo,
   useLink,
 }: {
   adapter: YouTubeApiAdapter;
+  initialQuery?: string;
   locale: SearchLocale;
   openVideo: OpenYouTubeVideo;
   useLink?: UseVideoLink;
 }) {
   const theme = useTheme();
   const [draftQuery, setDraftQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
+  const [submittedQuery, setSubmittedQuery] = useState(initialQuery.trim());
+  const [showingDiscoveryFeed, setShowingDiscoveryFeed] = useState(
+    initialQuery.trim().length > 0,
+  );
   const [validationError, setValidationError] = useState<string>();
   const search = useDiscoverySearch({
     adapter,
@@ -521,6 +502,7 @@ function ConfiguredDiscoverScreen({
     }
 
     setValidationError(undefined);
+    setShowingDiscoveryFeed(false);
     if (validation.query === submittedQuery) {
       void search.refetch();
       return;
@@ -591,6 +573,20 @@ function ConfiguredDiscoverScreen({
                 onSubmit={submitSearch}
                 value={draftQuery}
               />
+              {showingDiscoveryFeed && !errorStatus ? (
+                <View
+                  accessibilityLabel="Music for you"
+                  style={[styles.statusHeading, { gap: theme.spacing.xs }]}
+                >
+                  <MaterialCommunityIcons
+                    accessibilityElementsHidden
+                    color={theme.colors.accent}
+                    name="music-note"
+                    size={theme.iconSize.lg}
+                  />
+                  <ThemedText variant="heading">Music for you</ThemedText>
+                </View>
+              ) : null}
               {errorStatus ? (
                 <StatusCard
                   {...errorStatus}
@@ -624,6 +620,7 @@ function ConfiguredDiscoverScreen({
 
 export function DiscoverSearchScreen({
   adapter,
+  initialQuery,
   locale,
   openVideo = openYouTubeVideo,
   useLink,
@@ -631,6 +628,7 @@ export function DiscoverSearchScreen({
   return adapter ? (
     <ConfiguredDiscoverScreen
       adapter={adapter}
+      initialQuery={initialQuery}
       locale={locale}
       openVideo={openVideo}
       useLink={useLink}
@@ -672,10 +670,11 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   resultAction: {
-    alignSelf: "flex-start",
+    flex: 1,
   },
   resultActions: {
-    alignItems: "flex-start",
+    alignItems: "stretch",
+    flexDirection: "row",
   },
   resultText: {
     flex: 1,
@@ -701,9 +700,6 @@ const styles = StyleSheet.create({
   },
   skeletonLineShort: {
     width: "55%",
-  },
-  skeletonText: {
-    flex: 1,
   },
   statusHeading: {
     alignItems: "center",

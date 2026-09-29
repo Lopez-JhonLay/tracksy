@@ -18,8 +18,3 @@ export {
   type RuntimeConfigResult,
   type SearchLocale,
 } from "./runtime-config";
-export {
-  resolveTestAdaptersEnabled,
-  testAdaptersEnabled,
-  type TracksyRuntimeExtra,
-} from "./test-adapters";

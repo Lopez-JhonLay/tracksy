@@ -24,6 +24,10 @@ export {
 } from "./external-linking";
 export { decodeHtmlEntities } from "./html-entities";
 export {
+  MUSIC_DISCOVERY_QUERIES,
+  pickRandomMusicQuery,
+} from "./music-discovery";
+export {
   createDiscoverySearchQueryKey,
   createDiscoverySearchQueryOptions,
   DISCOVERY_CACHE_TIME_MS,

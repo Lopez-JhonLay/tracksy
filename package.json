@@ -4,7 +4,6 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/vector-icons": "^15.1.1",
-    "@react-native-community/netinfo": "12.0.1",
     "@tanstack/react-query": "^5.104.0",
     "expo": "~57.0.25",
     "expo-build-properties": "~57.0.22",
@@ -22,9 +21,7 @@
     "react-native": "0.86.3",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.2",
-    "react-native-webview": "13.16.1",
-    "zod": "^4.6.5",
-    "zustand": "^5.0.15"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
@@ -46,8 +43,6 @@
     "test:theme": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-theme.mjs",
     "test:foundations": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-foundations.mjs",
     "test:config": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/verify-runtime-config.mjs",
-    "test:e2e:config": "node scripts/verify-e2e-flow.mjs",
-    "test:e2e": "maestro test e2e/tracksy-smoke.yaml",
     "test": "jest --runInBand",
     "test:watch": "jest --watch"
   },

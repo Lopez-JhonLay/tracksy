@@ -78,12 +78,8 @@ export const layout = {
   screenPadding: 16,
   sectionGap: 24,
   maxContentWidth: 720,
-  topBarHeight: 56,
-  tabBarHeight: 64,
   searchFieldHeight: 52,
   minTouchTarget: 48,
-  resultThumbnailWidth: 120,
-  resultThumbnailHeight: 68,
 } as const;
 
 export type ThemeTokens = {
