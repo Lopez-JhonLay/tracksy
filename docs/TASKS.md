@@ -32,13 +32,18 @@ The earlier embedded Download/WebView implementation was retired after device te
 
 ## Release
 
-- [ ] 14. **Manual:** Configure separate development and preview YouTube keys with package/SHA-1/API restrictions, quotas, and alerts.
+- [x] 14. **Manual:** Configure separate development and preview YouTube keys with package/SHA-1/API restrictions, quotas, and alerts.
   - Commit: N/A; never record credential values.
 
-- [ ] 15. **Manual:** Verify real search, Load More, YouTube linking, Copy & Open, manual paste, and light/dark behavior on Android 10 and one current Android release.
+- [x] 15. Add the original Tracksy music mascot and replace the legacy, adaptive, monochrome, splash, and favicon assets.
+  - Verification: inspect transparency, safe-area padding, resolved Expo configuration, Expo Doctor, and visual approval.
+  - Commit: `feat: add Tracksy mascot app icon`
+
+- [ ] 16. **Manual:** Verify real search, Load More, YouTube linking, Copy & Open, manual paste, and light/dark behavior on Android 10 and one current Android release.
   - Commit: N/A unless results are documented.
 
-- [ ] 16. **Manual:** Build and install the EAS preview APK and complete the MVP acceptance flow.
+- [ ] 17. **Manual:** Build and install the EAS preview APK and complete the MVP acceptance flow.
+  - Verification: confirm the installed launcher icon and complete the acceptance flow on the Android 16 device.
   - Commit: `docs: record MVP verification` only if verification results are recorded.
 
-The MVP is complete when Tasks 1-16 are checked. Checking a task never grants permission to commit or push.
+The MVP is complete when Tasks 1-17 are checked. Checking a task never grants permission to commit or push.

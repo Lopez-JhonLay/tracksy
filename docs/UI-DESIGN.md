@@ -6,6 +6,13 @@ This document is the visual source of truth for Tracksy's single native screen. 
 
 Tracksy is playful and efficient: indigo primary actions, lime focus accents, soft-rounded surfaces, compact text-only media cards, Android system typography, and Material Community icons.
 
+## Mascot and App Icon
+
+- The Tracksy mascot is an original rounded indigo music creature with lime headphones, a note-shaped antenna, expressive eyes, and sound-wave cheek marks.
+- The launcher icon uses the mascot on a deep-navy background; the Android adaptive foreground keeps the complete silhouette inside the safe area.
+- Android themed icons use a single-color silhouette derived from the same mascot.
+- Keep the mascot text-free and recognizable at small sizes. Do not add a containing shape, unrelated props, or a separate color palette.
+
 ## Color Tokens
 
 | Token | Light | Dark |
