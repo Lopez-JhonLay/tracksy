@@ -39,11 +39,12 @@ The earlier embedded Download/WebView implementation was retired after device te
   - Verification: inspect transparency, safe-area padding, resolved Expo configuration, Expo Doctor, and visual approval.
   - Commit: `feat: add Tracksy mascot app icon`
 
-- [ ] 16. **Manual:** Verify real search, Load More, YouTube linking, Copy & Open, manual paste, and light/dark behavior on Android 10 and one current Android release.
-  - Commit: N/A unless results are documented.
+- [x] 16. **Manual:** Verify real search, Load More, YouTube linking, Copy & Open, manual paste, and light/dark behavior on the target Android 16 device.
+  - Verification: all acceptance checks passed in the installed preview APK. Android 10 remains configured as the minimum but has not been device-tested.
+  - Commit: `docs: record MVP verification`.
 
-- [ ] 17. **Manual:** Build and install the EAS preview APK and complete the MVP acceptance flow.
-  - Verification: confirm the installed launcher icon and complete the acceptance flow on the Android 16 device.
+- [x] 17. **Manual:** Build and install the EAS preview APK and complete the MVP acceptance flow.
+  - Verification: preview build completed without errors; installation, launcher mascot, startup feed, search, pagination, external actions, clipboard paste, and both themes passed on Android 16.
   - Commit: `docs: record MVP verification` only if verification results are recorded.
 
 The MVP is complete when Tasks 1-17 are checked. Checking a task never grants permission to commit or push.

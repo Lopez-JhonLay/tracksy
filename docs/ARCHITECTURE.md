@@ -101,4 +101,4 @@ Never log keys, complete API request URLs, clipboard contents, selected URLs, or
 
 Automated tests cover configuration, locale fallback, API normalization/errors, duration parsing, pagination/deduplication, UI states, external YouTube linking, clipboard handoff, and browser fallback.
 
-Manual Android verification covers real search, Load More, YouTube linking, Copy & Open, clipboard paste, theme behavior, and the preview APK on Android 10 plus one current Android release.
+Manual Android verification covers real search, Load More, YouTube linking, Copy & Open, clipboard paste, theme behavior, and the preview APK. The MVP acceptance flow passed on Android 16. Android 10/API 29 remains the configured minimum but has not been verified on a physical Android 10 device.
